@@ -1,5 +1,5 @@
 let
-  iohkLib = import ./nix/lib.nix;
+  iohkLib = import ./lib.nix;
 in
 iohkLib.nix-tools.release-nix {
   package-set-path = ./nix/nix-tools.nix;
@@ -7,6 +7,10 @@ iohkLib.nix-tools.release-nix {
   # packages from our stack.yaml or plan file (via nix/pkgs.nix) we
   # are interested in building on CI via nix-tools.
   packages = [ "cardano-node" ];
+
+  extraBuilds = {
+    inherit (import ./. {}) source-pins;
+  };
 
   # The set of jobs we consider crutial for each CI run.
   # if a single one of these fails, the build will be marked

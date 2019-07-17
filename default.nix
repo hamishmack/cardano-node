@@ -28,9 +28,15 @@
 # We will need to import the iohk-nix common lib, which includes
 # the nix-tools tooling.
 let
-  iohkLib = import ./nix/lib.nix;
+  iohkLib = import ./lib.nix;
   nixTools = import ./nix/nix-tools.nix {};
 in {
   inherit (nixTools) nix-tools;
   inherit (iohkLib.iohkNix) check-nix-tools check-hydra;
+  source-pins = iohkLib.pkgs.runCommand "source-pins" {} ''
+    mkdir -pv $out
+    cd $out
+    ln -sv ${iohkLib.iohkNix.source-pins} iohk-nix-pins
+    ln -sv ${iohkLib.iohkNixPath} iohk-nix
+  '';
 }
