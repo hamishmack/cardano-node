@@ -24,6 +24,12 @@ let
           "${lib.optionalString (cfg.pbftThreshold != null) "--pbft-signature-threshold ${cfg.pbftThreshold}"}"
           "${lib.optionalString (cfg.signingKey != null) "--signing-key ${cfg.signingKey}"}"
           "${lib.optionalString (cfg.delegationCertificate != null) "--delegation-certificate ${cfg.delegationCertificate}"}"
+          "--trace-tx-inbound"
+          "--trace-tx-outbound"
+          "--trace-tx-submission-protocol"
+          "--trace-local-tx-submission-server"
+          "--trace-local-tx-submission-protocol"
+          "--trace-mempool"
         ];
     in ''
         echo "Starting ${exec}: '' + concatStringsSep "\"\n   echo \"" cmd + ''"
