@@ -190,9 +190,9 @@ genesisBenchmarkRunner loggingLayer
   liftIO . traceWith benchTracer . TraceBenchTxSubDebug
     $ "******* Tx generator, genesis UTxO is ready *******"
 
-  let genesisAddress   = mkAddressForKey pInfoConfig genesisKey
-      sourceAddress    = mkAddressForKey pInfoConfig sourceKey
-      recipientAddress = mkAddressForKey pInfoConfig recepientKey
+  let genesisAddress   = mkAddressForKey genesisConfig genesisKey
+      sourceAddress    = mkAddressForKey genesisConfig sourceKey
+      recipientAddress = mkAddressForKey genesisConfig recepientKey
 
   liftIO . traceWith benchTracer . TraceBenchTxSubDebug
     $ "******* Tx generator, addresses are ready *******"
@@ -343,15 +343,20 @@ prepareSigningKeys skeys = do
   pure . map (Crypto.SigningKey . snd) $ rights desKeys
 
 mkAddressForKey
-  :: NodeConfig ByronEBBExtNodeConfig
+  :: CC.Genesis.Config
   -> Crypto.SigningKey
   -> CC.Common.Address
-mkAddressForKey _pInfoConfig =
+mkAddressForKey _genesisConfig =
   CC.Common.makeVerKeyAddress networkMagic . Crypto.toVerification
  where
-  -- The value is taken from a result of
-  -- script 'issue-genesis-utxo-expenditure.sh'.
-  networkMagic = CC.Common.NetworkTestnet 459045235
+  networkMagic = CC.Common.NetworkMainOrStage
+--  networkMagic = CC.Common.NetworkTestnet 459045235 -- anId
+--    case CC.Genesis.configReqNetMagic genesisConfig of
+  --    Crypto.RequiresNoMagic -> CC.Common.NetworkMainOrStage
+      -- The value is taken from a result of script 'issue-genesis-utxo-expenditure.sh'.
+    --  Crypto.RequiresMagic   -> CC.Common.NetworkTestnet 459045235 -- anId
+  -- Crypto.ProtocolMagicId anId =
+  --   CC.Genesis.gdProtocolMagicId $ CC.Genesis.configGenesisData genesisConfig
 
 readSecretKey :: FilePath -> IO (Either String LB.ByteString)
 readSecretKey skFp = do
