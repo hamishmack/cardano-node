@@ -36,7 +36,7 @@ mainnetConfiguration :: PartialCardanoConfiguration
 mainnetConfiguration =
   PartialCardanoConfiguration
     { pccLogPath = pure "./logs/"
-    , pccLogConfig = pure "./configuration/log-configuration.yaml"
+    , pccLogConfig = mempty
     , pccDBPath = pure "./db/"
     , pccApplicationLockFile = pure ""
     , pccTopologyInfo = pure $ TopologyInfo (RelayId 0) "./configuration/simple-topology.json"
@@ -154,7 +154,7 @@ devConfiguration =
   PartialCardanoConfiguration
     { pccLogPath = pure "./logs/"
     , pccDBPath = pure "./db/"
-    , pccLogConfig = pure "./log-config.yaml"
+    , pccLogConfig = mempty
     , pccSocketDir = pure "./socket/"
     , pccApplicationLockFile = pure ""
     , pccTopologyInfo = pure $ TopologyInfo (RelayId 0) "./configuration/simple-topology.json"
