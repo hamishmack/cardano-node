@@ -29,8 +29,8 @@ extra-deps:
   - word-wrap-0.4.1
 
     # Cardano-ledger dependencies
-  - git: https://github.com/input-output-hk/cardano-ledger
-    commit: 181f69af290412abecefc07e1b26e77a453755ff
+  - git: https://github.com/denisshevchenko/cardano-ledger
+    commit: 4749dc3d8e46068eef88a6013345c613b514f9c7
     subdirs:
       - cardano-ledger
       - cardano-ledger/test

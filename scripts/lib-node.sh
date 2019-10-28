@@ -4,7 +4,8 @@ genesis_root="configuration/${genesis}"
 genesis_file="${genesis_root}/genesis.json"
 if test ! -f "${genesis_file}"
 then echo "ERROR: genesis ${genesis_file} does not exist!">&1; exit 1; fi
-genesis_hash="$(cabal new-run -v0 -- cardano-cli --real-pbft print-genesis-hash --genesis-json ${genesis_file})"
+# genesis_hash="$(cabal new-run -v0 -- cardano-cli --real-pbft print-genesis-hash --genesis-json ${genesis_file})"
+genesis_hash="db60f5877ac3032b401e53bf5c91d4fe84b6cb993582ffcf4c10828407127386"
 
 function logcfg () {
         printf -- "--log-config configuration/log-config-${1}.yaml "

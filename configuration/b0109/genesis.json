@@ -350,7 +350,7 @@
     , "slotDuration": "20000"
     , "maxBlockSize": "2000000"
     , "maxHeaderSize": "2000000"
-    , "maxTxSize": "4096"
+    , "maxTxSize": "16384"
     , "maxProposalSize": "700"
     , "mpcThd": "20000000000000"
     , "heavyDelThd": "300000000000"

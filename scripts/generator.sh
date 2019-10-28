@@ -7,7 +7,7 @@ genesis_root="configuration/${genesis}"
 genesis_file="${genesis_root}/genesis.json"
 if test ! -f "${genesis_file}"
 then echo "ERROR: genesis ${genesis_file} does not exist!">&1; exit 1; fi
-genesis_hash="b010944818186e0f1e4094d41b0612240f61908a5a262080c0be5d63ebd4766b"
+genesis_hash="db60f5877ac3032b401e53bf5c91d4fe84b6cb993582ffcf4c10828407127386"
 
 NOW=`date "+%Y-%m-%d 00:00:00"`
 NETARGS=(
@@ -19,11 +19,11 @@ NETARGS=(
 )
 TX_GEN_ARGS=(
         --num-of-txs     1000
-        --inputs-per-tx  2
-        --outputs-per-tx 2
+        --inputs-per-tx  1
+        --outputs-per-tx 1
         --tx-fee         1000000
         --tps            10
-        --add-tx-size    100
+        --add-tx-size    14336
         --sig-key        "${genesis_root}/delegate-keys.000.key"
         --sig-key        "${genesis_root}/delegate-keys.001.key"
         --sig-key        "${genesis_root}/delegate-keys.002.key"
