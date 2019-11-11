@@ -20,7 +20,8 @@ import           Ouroboros.Consensus.NodeId (CoreNodeId (..))
 
 import           Cardano.Config.CommonCLI
 import           Cardano.Config.Types (ConfigYamlFilePath(..), MiscellaneousFilepaths(..),
-                                       NodeCLI(..), SocketFile(..), parseNodeConfiguration)
+                                       NodeCLI(..), NodeConfiguration(..), SocketFile(..),
+                                       parseNodeConfiguration)
 import           Cardano.Wallet.Client
 
 runClient :: WalletCLI -> Trace IO Text -> IO ()
@@ -29,7 +30,15 @@ runClient WalletCLI{..} tracer = do
     let tracer' = contramap pack . toLogObject $
           appendName ("Wallet " <> pack (show nid)) tracer
     nc <- parseNodeConfiguration . unConfigPath $ configFp cliNodeCLI
-    SomeProtocol p <- fromProtocol nc cliNodeCLI cliProtocol
+    SomeProtocol p <- fromProtocol
+                        (ncGenesisHash nc)
+                        (genesisFile $ mscFp cliNodeCLI)
+                        (ncReqNetworkMagic nc)
+                        (ncPbftSignatureThresh nc)
+                        (delegCertFile $ mscFp cliNodeCLI)
+                        (signKeyFile $ mscFp cliNodeCLI)
+                        (ncUpdate nc)
+                        cliProtocol
     let socketDir = unSocket . socketFile $ mscFp cliNodeCLI
     runWalletClient p socketDir cliCoreNodeId cliNumCoreNodes tracer'
 

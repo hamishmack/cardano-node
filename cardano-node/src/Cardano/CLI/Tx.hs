@@ -52,7 +52,8 @@ import           Cardano.CLI.Ops
 import           Cardano.CLI.Tx.Submission
 import           Cardano.Common.Orphans ()
 import           Cardano.Config.Protocol
-import           Cardano.Config.Types (NodeCLI, NodeConfiguration(..))
+import           Cardano.Config.Types (MiscellaneousFilepaths(..), NodeCLI(..),
+                                       NodeConfiguration(..))
 import           Cardano.Config.Topology
 
 
@@ -140,7 +141,15 @@ withRealPBFT
       -> IO a)
   -> IO a
 withRealPBFT nc nCli action = do
-  SomeProtocol p <- fromProtocol nc nCli $ ncProtocol nc
+  SomeProtocol p <- fromProtocol
+                      (ncGenesisHash nc)
+                      (genesisFile $ mscFp nCli)
+                      (ncReqNetworkMagic nc)
+                      (ncPbftSignatureThresh nc)
+                      (delegCertFile $ mscFp nCli)
+                      (signKeyFile $ mscFp nCli)
+                      (ncUpdate nc)
+                      (ncProtocol nc)
   case p of
     proto@Consensus.ProtocolRealPBFT{} -> action proto
     _ -> throwIO $ ProtocolNotSupported (ncProtocol nc)

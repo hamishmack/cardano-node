@@ -105,7 +105,15 @@ runNode loggingLayer nc nCli = do
                              NormalVerbosity -> "normal"
                              MinimalVerbosity -> "minimal"
                              MaximalVerbosity -> "maximal"
-    SomeProtocol p  <- fromProtocol nc nCli $ ncProtocol nc
+    SomeProtocol p  <- fromProtocol
+                         (ncGenesisHash nc)
+                         (genesisFile $ mscFp nCli)
+                         (ncReqNetworkMagic nc)
+                         (ncPbftSignatureThresh nc)
+                         (delegCertFile $ mscFp nCli)
+                         (signKeyFile $ mscFp nCli)
+                         (ncUpdate nc)
+                         (ncProtocol nc)
 
     let tracers     = mkTracers (traceOpts nCli) trace
 
