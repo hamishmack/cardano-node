@@ -20,15 +20,13 @@ import           Prelude (error, fail)
 import           Test.Cardano.Prelude (canonicalDecodePretty)
 
 import           Codec.CBOR.Read (deserialiseFromBytes, DeserialiseFailure)
-import           Control.Exception hiding (throwIO)
 import qualified Data.ByteString.Lazy as LB
 import           Data.Text (unpack)
 
 import qualified Cardano.Chain.Genesis as Genesis
 import qualified Cardano.Chain.Update as Update
-import           Cardano.Crypto (decodeAbstractHash)
+import           Cardano.Crypto (RequiresNetworkMagic, decodeHash)
 import qualified Cardano.Crypto.Signing as Signing
-import           Cardano.Shell.Lib (GeneralException (..))
 
 import           Ouroboros.Consensus.Block (Header)
 import           Ouroboros.Consensus.Mempool.API (ApplyTxErr, GenTx, GenTxId)
@@ -45,8 +43,7 @@ import           Ouroboros.Consensus.Util.Condense
 import           Ouroboros.Network.Block
 
 import           Cardano.Config.Types
-                   (DelegationCertFile (..), GenesisFile (..), MiscellaneousFilepaths (..),
-                    NodeCLI (..), NodeConfiguration (..), Protocol (..),
+                   (DelegationCertFile (..), GenesisFile (..), Protocol (..),
                     SigningKeyFile (..))
 
 -- TODO: consider not throwing this, or wrap it in a local error type here
@@ -80,22 +77,26 @@ data SomeProtocol where
                => Consensus.Protocol blk -> SomeProtocol
 
 fromProtocol
-  :: NodeConfiguration
-  -> NodeCLI
+  :: Text
+  -> GenesisFile
+  -> RequiresNetworkMagic
+  -> Maybe Double
+  -> Maybe DelegationCertFile
+  -> Maybe SigningKeyFile
   -> Protocol
   -> IO SomeProtocol
 
-fromProtocol _ _ ByronLegacy =
+fromProtocol _ _ _ _ _ _ ByronLegacy =
   error "Byron Legacy protocol is not implemented."
 
-fromProtocol _ _ BFT =
+fromProtocol _ _ _ _ _ _ BFT =
   case Consensus.runProtocol p of
     Dict -> return $ SomeProtocol p
 
   where
     p = Consensus.ProtocolMockBFT mockSecurityParam
 
-fromProtocol _ _ Praos =
+fromProtocol _ _ _ _ _ _ Praos =
   case Consensus.runProtocol p of
     Dict -> return $ SomeProtocol p
 
@@ -108,7 +109,7 @@ fromProtocol _ _ Praos =
       }
 
 
-fromProtocol _ _ MockPBFT =
+fromProtocol _ _ _ _ _ _ MockPBFT =
   case Consensus.runProtocol p of
     Dict -> return $ SomeProtocol p
 
@@ -120,21 +121,22 @@ fromProtocol _ _ MockPBFT =
       }
     numNodes = 3
 
-
-fromProtocol nc nCli RealPBFT = do
-    let genHash = either (throw . ConfigurationError) identity $
-                  decodeAbstractHash (ncGenesisHash nc)
+fromProtocol gHash genFile nMagic sigThresh delCertFp sKeyFp RealPBFT = do
+    let genHash = either panic identity $ decodeHash gHash
 
     gcE <- runExceptT (Genesis.mkConfigFromFile
-                       (ncReqNetworkMagic nc)
-                       (unGenesisFile . genesisFile $ mscFp nCli)
+                       nMagic
+                       (unGenesisFile genFile)
                        genHash
                       )
     let gc = case gcE of
-          Left err -> throw err -- TODO: no no no!
-          Right x -> x
+            Left err -> panic $ show err
+            Right x -> x
 
-    optionalLeaderCredentials <- readLeaderCredentials gc nCli
+    optionalLeaderCredentials <- readLeaderCredentials
+                                   gc
+                                   delCertFp
+                                   sKeyFp
 
     let
         -- TODO:  make configurable via CLI (requires cardano-shell changes)
@@ -146,7 +148,7 @@ fromProtocol nc nCli RealPBFT = do
         -- to do this, along with other config conversion plumbing:
         p = Consensus.ProtocolRealPBFT
               gc
-              (PBftSignatureThreshold <$> ncPbftSignatureThresh nc)
+              (PBftSignatureThreshold <$> sigThresh)
               defProtoVer
               defSoftVer
               optionalLeaderCredentials
@@ -155,11 +157,10 @@ fromProtocol nc nCli RealPBFT = do
       Dict -> return $ SomeProtocol p
 
 readLeaderCredentials :: Genesis.Config
-                      -> NodeCLI
+                      -> Maybe DelegationCertFile
+                      -> Maybe SigningKeyFile
                       -> IO (Maybe PBftLeaderCredentials)
-readLeaderCredentials gc nCli = do
-  let mDelCertFp = delegCertFile $ mscFp nCli
-  let mSKeyFp = signKeyFile $ mscFp nCli
+readLeaderCredentials gc mDelCertFp mSKeyFp = do
   case (mDelCertFp, mSKeyFp) of
     (Nothing, Nothing) -> pure Nothing
     (Just _, Nothing) -> panic "Signing key filepath not specified"

@@ -21,7 +21,8 @@ import           Ouroboros.Consensus.NodeId (CoreNodeId)
 import           Cardano.Config.CommonCLI
 import           Cardano.Config.Protocol (Protocol, SomeProtocol(..), fromProtocol)
 import           Cardano.Config.Types (CardanoConfiguration(..), ConfigYamlFilePath(..),
-                                       NodeCLI(..), parseNodeConfiguration)
+                                       MiscellaneousFilepaths(..), NodeCLI(..), NodeConfiguration(..),
+                                       parseNodeConfiguration)
 import           Cardano.Common.Parsers (nodeCliParser, parseCoreNodeId, parseProtocol)
 import           Cardano.Chairman (runChairman)
 
@@ -43,7 +44,14 @@ main = do
 
 
     nc <- liftIO . parseNodeConfiguration . unConfigPath $ configFp caNodeCLI
-    SomeProtocol p <- fromProtocol nc caNodeCLI caProtocol
+    SomeProtocol p <- fromProtocol
+                        (ncGenesisHash nc)
+                        (genesisFile $ mscFp caNodeCLI)
+                        (ncReqNetworkMagic nc)
+                        (ncPbftSignatureThresh nc)
+                        (delegCertFile $ mscFp caNodeCLI)
+                        (signKeyFile $ mscFp caNodeCLI)
+                        caProtocol
 
     let run = runChairman p caCoreNodeIds
                           (NumCoreNodes $ length caCoreNodeIds)
