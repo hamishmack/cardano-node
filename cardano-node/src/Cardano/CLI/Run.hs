@@ -63,6 +63,7 @@ import qualified Cardano.Crypto.Signing as Crypto
 
 import qualified Test.Cardano.Chain.Genesis.Dummy as Dummy
 
+import           Ouroboros.Consensus.NodeId
 import qualified Ouroboros.Consensus.Protocol as Consensus
 
 import           Cardano.CLI.Delegation
@@ -78,11 +79,9 @@ import           Cardano.CLI.Tx.Generation (NumberOfTxs (..),
                                             genesisBenchmarkRunner)
 import           Cardano.Common.Orphans ()
 import           Cardano.Config.Protocol
-import           Cardano.Config.Types (CardanoConfiguration(..), ConfigYamlFilePath(..),
-                                       GenesisFile(..), MiscellaneousFilepaths(..),
-                                       NodeCLI(..), NodeConfiguration(..),
-                                       SigningKeyFile(..), TopologyFile(..),
-                                       parseNodeConfiguration)
+import           Cardano.Config.Types (CardanoConfiguration(..), Core(..),
+                                       DelegationCertFile(..), GenesisFile(..),
+                                       SigningKeyFile(..), SocketFile(..))
 import           Cardano.Config.Logging (LoggingLayer (..))
 import           Cardano.Config.Topology (TopologyInfo(..))
 
@@ -134,8 +133,8 @@ data ClientCommand
 
   | SubmitTx
     TxFile
-    NodeCLI
     -- ^ Filepath of transaction to submit.
+    TopologyInfo
   | SpendGenesisUTxO
     NewTxFile
     -- ^ Filepath of the newly created transaction.
@@ -144,7 +143,6 @@ data ClientCommand
     Common.Address
     -- ^ Genesis UTxO address.
     (NonEmpty UTxO.TxOut)
-    NodeCLI
     -- ^ Tx output.
   | SpendUTxO
     NewTxFile
@@ -155,7 +153,6 @@ data ClientCommand
     -- ^ Inputs available for spending to the Tx underwriter's key.
     (NonEmpty UTxO.TxOut)
     -- ^ Genesis UTxO output Address.
-    NodeCLI
 
     --- Tx Generator Command ----------
 
@@ -167,7 +164,7 @@ data ClientCommand
     TPSRate
     (Maybe TxAdditionalSize)
     [SigningKeyFile]
-    NodeCLI
+    NodeId
    deriving Show
 
 runCommand :: CardanoConfiguration -> LoggingLayer -> ClientCommand -> ExceptT CliError IO ()
@@ -225,25 +222,78 @@ runCommand _ _(CheckDelegation magic cert issuerVF delegateVF) = do
   delegateVK <- readVerificationKey delegateVF
   liftIO $ checkByronGenesisDelegation cert magic issuerVK delegateVK
 
-runCommand _ _(SubmitTx fp nCli) = do
-  nc <- liftIO . parseNodeConfiguration . unConfigPath $ configFp nCli
-  let topologyFp = unTopology . topFile $ mscFp nCli
+runCommand cc _(SubmitTx fp topology) = do
+  let genHash = coGenesisHash $ ccCore cc
+      genFile = GenesisFile $ coGenesisFile $ ccCore cc
+      nMagic = coRequiresNetworkMagic $ ccCore cc
+      sigThresh = coPBftSigThd $ ccCore cc
+      delCertFp = DelegationCertFile <$> (coStaticKeyDlgCertFile $ ccCore cc)
+      sKeyFp = SigningKeyFile <$> (coStaticKeySigningKeyFile $ ccCore cc)
+      socketFp = SocketFile $ ccSocketDir cc
+      ptcl = ccProtocol cc
+      update = ccUpdate cc
   tx <- liftIO $ readByronTx fp
-  liftIO $ nodeSubmitTx (TopologyInfo (ncNodeId nc) topologyFp) nc nCli tx
-
-runCommand _ _(SpendGenesisUTxO (NewTxFile ctTx) ctKey genRichAddr outs nCli) = do
-  nc <- liftIO . parseNodeConfiguration . unConfigPath $ configFp nCli
-  sk <- readSigningKey (ncProtocol nc) ctKey
-  tx <- liftIO $ issueGenesisUTxOExpenditure genRichAddr outs nc nCli sk
+  liftIO $ nodeSubmitTx
+             topology
+             genHash
+             genFile
+             nMagic
+             sigThresh
+             delCertFp
+             sKeyFp
+             socketFp
+             update
+             ptcl
+             tx
+runCommand cc _ (SpendGenesisUTxO (NewTxFile ctTx) ctKey genRichAddr outs) = do
+  let genHash = coGenesisHash $ ccCore cc
+      genFile = GenesisFile $ coGenesisFile $ ccCore cc
+      nMagic = coRequiresNetworkMagic $ ccCore cc
+      sigThresh = coPBftSigThd $ ccCore cc
+      delCertFp = DelegationCertFile <$> (coStaticKeyDlgCertFile $ ccCore cc)
+      sKeyFp = SigningKeyFile <$> (coStaticKeySigningKeyFile $ ccCore cc)
+      ptcl = ccProtocol cc
+      update = ccUpdate cc
+  sk <- readSigningKey ptcl ctKey
+  tx <- liftIO $ issueGenesisUTxOExpenditure
+                   genRichAddr
+                   outs
+                   genHash
+                   genFile
+                   nMagic
+                   sigThresh
+                   delCertFp
+                   sKeyFp
+                   update
+                   ptcl
+                   sk
   liftIO . ensureNewFileLBS ctTx $ serialise tx
 
-runCommand _ _ (SpendUTxO (NewTxFile ctTx) ctKey ins outs nCli) = do
-  nc <- liftIO . parseNodeConfiguration . unConfigPath $ configFp nCli
-  sk <- readSigningKey (ncProtocol nc) ctKey
-  gTx <- liftIO $ issueUTxOExpenditure ins outs nc nCli sk
+runCommand cc _ (SpendUTxO (NewTxFile ctTx) ctKey ins outs) = do
+  let genHash = coGenesisHash $ ccCore cc
+      genFile = GenesisFile $ coGenesisFile $ ccCore cc
+      nMagic = coRequiresNetworkMagic $ ccCore cc
+      sigThresh = coPBftSigThd $ ccCore cc
+      delCertFp = DelegationCertFile <$> (coStaticKeyDlgCertFile $ ccCore cc)
+      sKeyFp = SigningKeyFile <$> (coStaticKeySigningKeyFile $ ccCore cc)
+      ptcl = ccProtocol cc
+      update = ccUpdate cc
+  sk <- readSigningKey ptcl ctKey
+  gTx <- liftIO $ issueUTxOExpenditure
+                    ins
+                    outs
+                    genHash
+                    genFile
+                    nMagic
+                    sigThresh
+                    delCertFp
+                    sKeyFp
+                    update
+                    ptcl
+                    sk
   liftIO . ensureNewFileLBS ctTx $ serialise gTx
 
-runCommand _ loggingLayer
+runCommand cc loggingLayer
            (GenerateTxs numOfTxs
                         numOfInsPerTx
                         numOfOutsPerTx
@@ -251,17 +301,24 @@ runCommand _ loggingLayer
                         tps
                         txAdditionalSize
                         sigKeysFiles
-                        nCli) = do
-  nc <- liftIO . parseNodeConfiguration . unConfigPath $ configFp nCli
-
-  liftIO $ withRealPBFT nc nCli $
+                        nodeId) = do
+  let genHash = coGenesisHash $ ccCore cc
+      genFile = GenesisFile . coGenesisFile $ ccCore cc
+      nMagic = coRequiresNetworkMagic $ ccCore cc
+      sigThresh = coPBftSigThd $ ccCore cc
+      delCertFp = DelegationCertFile <$> (coStaticKeyDlgCertFile $ ccCore cc)
+      sKeyFp = SigningKeyFile <$> (coStaticKeySigningKeyFile $ ccCore cc)
+      ptcl = ccProtocol cc
+      socketFp = SocketFile $ ccSocketDir cc
+      topologyInfo = (ccTopologyInfo cc) { node = nodeId}
+      update = ccUpdate cc
+  liftIO $ withRealPBFT genHash genFile nMagic sigThresh delCertFp sKeyFp update ptcl $
     \protocol@(Consensus.ProtocolRealPBFT _ _ _ _ _) -> do
-      let topologyFp = unTopology . topFile $ mscFp nCli
       res <- runExceptT $ genesisBenchmarkRunner
                             loggingLayer
-                            nCli
+                            socketFp
                             protocol
-                            (TopologyInfo (ncNodeId nc) topologyFp)
+                            topologyInfo
                             numOfTxs
                             numOfInsPerTx
                             numOfOutsPerTx

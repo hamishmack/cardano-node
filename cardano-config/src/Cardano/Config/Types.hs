@@ -18,7 +18,6 @@ module Cardano.Config.Types
     , SocketFile (..)
     , TopologyFile( ..)
     -- * specific for @Core@
-    , RequireNetworkMagic (..)
     , NodeProtocol (..)
     , Spec (..)
     , Initializer (..)
@@ -270,14 +269,6 @@ instance FromJSON NodeConfiguration where
 parseNodeConfiguration :: FilePath -> IO NodeConfiguration
 parseNodeConfiguration fp = decodeFileThrow fp
 
-
--- | Do we require network magic or not?
--- Network magic allows the differentiation from mainnet and testnet.
-data RequireNetworkMagic
-    = RequireNetworkMagic
-    | NoRequireNetworkMagic
-    deriving (Eq, Show)
-
 -- | The type of the protocol being run on the node.
 data NodeProtocol
     = BFTProtocol
@@ -309,7 +300,7 @@ data Core = Core
     -- ^ Static key signing file.
     , coStaticKeyDlgCertFile        :: !(Maybe FilePath)
     -- ^ Static key delegation certificate.
-    , coRequiresNetworkMagic        :: !RequireNetworkMagic
+    , coRequiresNetworkMagic        :: !RequiresNetworkMagic
     -- ^ Do we require the network byte indicator for mainnet, testnet or staging?
     , coPBftSigThd                  :: !(Maybe Double)
     -- ^ PBFT signature threshold system parameters
