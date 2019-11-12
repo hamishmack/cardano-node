@@ -51,8 +51,7 @@ import qualified Ouroboros.Network.NodeToClient as NodeToClient
 
 import           Cardano.Config.Topology
 import           Cardano.Common.LocalSocket
-import           Cardano.Config.Types (MiscellaneousFilepaths(..),
-                                       NodeCLI(..),  SocketFile(..))
+import           Cardano.Config.Types (SocketFile(..))
 
 
 
@@ -67,13 +66,13 @@ handleTxSubmission :: forall blk.
                       ( RunNode blk
                       , Show (ApplyTxErr blk)
                       )
-                   => NodeCLI
+                   => SocketFile
                    -> Consensus.Protocol blk
                    -> TopologyInfo
                    -> GenTx blk
                    -> Tracer IO String
                    -> IO ()
-handleTxSubmission nCli ptcl tinfo tx tracer = do
+handleTxSubmission socketFp ptcl tinfo tx tracer = do
     topoE <- readTopologyFile (topologyFile tinfo)
     NetworkTopology nodeSetups <-
       case topoE of
@@ -87,20 +86,19 @@ handleTxSubmission nCli ptcl tinfo tx tracer = do
     let pinfo :: ProtocolInfo blk
         pinfo = protocolInfo (NumCoreNodes (length nodeSetups)) (CoreNodeId nid) ptcl
 
-    submitTx nCli (pInfoConfig pinfo) (node tinfo) tx tracer
-
+    submitTx socketFp (pInfoConfig pinfo) (node tinfo) tx tracer
 
 submitTx :: ( RunNode blk
             , Show (ApplyTxErr blk)
             )
-         => NodeCLI
+         => SocketFile
          -> NodeConfig (BlockProtocol blk)
          -> NodeId
          -> GenTx blk
          -> Tracer IO String
          -> IO ()
-submitTx nCli protoInfoConfig nId tx tracer = do
-    socketPath <- localSocketAddrInfo nId (unSocket . socketFile $ mscFp nCli) NoMkdirIfMissing
+submitTx socketFp protoInfoConfig nId tx tracer = do
+    socketPath <- localSocketAddrInfo nId (unSocket $ socketFp) NoMkdirIfMissing
     NodeToClient.connectTo
       nullTracer
       nullTracer
