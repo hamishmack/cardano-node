@@ -135,6 +135,7 @@ data ClientCommand
     TxFile
     -- ^ Filepath of transaction to submit.
     TopologyInfo
+    NodeId
   | SpendGenesisUTxO
     NewTxFile
     -- ^ Filepath of the newly created transaction.
@@ -222,7 +223,7 @@ runCommand _ _(CheckDelegation magic cert issuerVF delegateVF) = do
   delegateVK <- readVerificationKey delegateVF
   liftIO $ checkByronGenesisDelegation cert magic issuerVK delegateVK
 
-runCommand cc _(SubmitTx fp topology) = do
+runCommand cc _(SubmitTx fp topology nid) = do
   let genHash = coGenesisHash $ ccCore cc
       genFile = GenesisFile $ coGenesisFile $ ccCore cc
       nMagic = coRequiresNetworkMagic $ ccCore cc
@@ -234,7 +235,7 @@ runCommand cc _(SubmitTx fp topology) = do
       update = ccUpdate cc
   tx <- liftIO $ readByronTx fp
   liftIO $ nodeSubmitTx
-             topology
+             (topology { node = nid })
              genHash
              genFile
              nMagic
