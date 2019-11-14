@@ -721,6 +721,11 @@ runBenchmark benchTracer
              tpsRate
              txAdditionalSize = do
   liftIO . traceWith benchTracer . TraceBenchTxSubDebug
+    $ "******* Tx generator, phase 1, DELAY after genesis tx *******"
+
+  liftIO $ threadDelay (1000000 * 60 * 2) -- 2 minutes
+
+  liftIO . traceWith benchTracer . TraceBenchTxSubDebug
     $ "******* Tx generator, phase 1: make enough available UTxO entries *******"
   createMoreFundCoins
     lowLevelSubmitTracer
