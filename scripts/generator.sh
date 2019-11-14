@@ -13,16 +13,17 @@ NETARGS=(
         --topology      "configuration/simple-topology.json"
 )
 TX_GEN_ARGS=(
-        --num-of-txs     1000
-        --inputs-per-tx  2
-        --outputs-per-tx 2
+        --num-of-txs     10
+        --inputs-per-tx  1
+        --outputs-per-tx 1
         --tx-fee         1000000
         --tps            10
-        --add-tx-size    100
         --sig-key        "${genesis_root}/delegate-keys.000.key"
         --sig-key        "${genesis_root}/delegate-keys.001.key"
         --sig-key        "${genesis_root}/delegate-keys.002.key"
 )
+
+# --add-tx-size    100
 
 function mkdlgkey () {
   printf -- "--signing-key            ${genesis_root}/delegate-keys.%03d.key"    "$1"

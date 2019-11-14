@@ -732,68 +732,70 @@ runBenchmark benchTracer
     numOfTxs
     numOfInsPerTx
 
-  liftIO . traceWith benchTracer . TraceBenchTxSubDebug
-    $ "******* Tx generator, phase 2: pay to recipients *******"
-  let benchmarkTracers :: BenchmarkTxSubmitTracers IO (ByronBlockOrEBB ByronConfig)
-      benchmarkTracers = BenchmarkTracers
-                           { trSendRecvConnect      = connectTracer
-                           , trSendRecvTxSubmission = submitTracer
-                           }
 
-  let localAddr :: Maybe Network.Socket.AddrInfo
-      localAddr = Nothing
+  when (False) $ do
+      liftIO . traceWith benchTracer . TraceBenchTxSubDebug
+        $ "******* Tx generator, phase 2: pay to recipients *******"
+      let benchmarkTracers :: BenchmarkTxSubmitTracers IO (ByronBlockOrEBB ByronConfig)
+          benchmarkTracers = BenchmarkTracers
+                               { trSendRecvConnect      = connectTracer
+                               , trSendRecvTxSubmission = submitTracer
+                               }
 
-  let (anAddrFamily, targetNodeHost) =
-        case getAddress $ naHostAddress targetNodeAddress of
-          Just (IP.IPv4 ipv4) -> (AF_INET,  show ipv4)
-          Just (IP.IPv6 ipv6) -> (AF_INET6, show ipv6)
-          Nothing -> panic "Target node's IP-address is undefined!"
+      let localAddr :: Maybe Network.Socket.AddrInfo
+          localAddr = Nothing
 
-  let targetNodePort = show $ naPort targetNodeAddress
+      let (anAddrFamily, targetNodeHost) =
+            case getAddress $ naHostAddress targetNodeAddress of
+              Just (IP.IPv4 ipv4) -> (AF_INET,  show ipv4)
+              Just (IP.IPv6 ipv6) -> (AF_INET6, show ipv6)
+              Nothing -> panic "Target node's IP-address is undefined!"
 
-  let hints :: AddrInfo
-      hints = defaultHints
-        { addrFlags      = [AI_PASSIVE]
-        , addrFamily     = anAddrFamily
-        , addrSocketType = Stream
-        , addrCanonName  = Nothing
-        }
-  -- Corresponds to a node 0 (used by default).
-  (remoteAddr:_) <- liftIO $ getAddrInfo (Just hints) (Just targetNodeHost) (Just targetNodePort)
+      let targetNodePort = show $ naPort targetNodeAddress
 
-  let updROEnv
-        :: ROEnv (Byron.GenTxId (ByronBlockOrEBB ByronConfig)) (GenTx (ByronBlockOrEBB ByronConfig))
-        -> ROEnv (Byron.GenTxId (ByronBlockOrEBB ByronConfig)) (GenTx (ByronBlockOrEBB ByronConfig))
-      updROEnv defaultROEnv =
-        ROEnv { targetBacklog     = targetBacklog defaultROEnv
-              , txNumServiceTime  = Just $ minimalTPSRate tpsRate
-              , txSizeServiceTime = Nothing
-              }
+      let hints :: AddrInfo
+          hints = defaultHints
+            { addrFlags      = [AI_PASSIVE]
+            , addrFamily     = anAddrFamily
+            , addrSocketType = Stream
+            , addrCanonName  = Nothing
+            }
+      -- Corresponds to a node 0 (used by default).
+      (remoteAddr:_) <- liftIO $ getAddrInfo (Just hints) (Just targetNodeHost) (Just targetNodePort)
 
-  -- Run generator.
-  txGenerator benchTracer
-              pInfoConfig
-              recipientAddress
-              sourceKey
-              txFee
-              numOfTxs
-              numOfInsPerTx
-              numOfOutsPerTx
-              txAdditionalSize
+      let updROEnv
+            :: ROEnv (Byron.GenTxId (ByronBlockOrEBB ByronConfig)) (GenTx (ByronBlockOrEBB ByronConfig))
+            -> ROEnv (Byron.GenTxId (ByronBlockOrEBB ByronConfig)) (GenTx (ByronBlockOrEBB ByronConfig))
+          updROEnv defaultROEnv =
+            ROEnv { targetBacklog     = targetBacklog defaultROEnv
+                  , txNumServiceTime  = Just $ minimalTPSRate tpsRate
+                  , txSizeServiceTime = Nothing
+                  }
 
-  liftIO . traceWith benchTracer . TraceBenchTxSubDebug
-    $ "******* Tx generator, launch submission threads... *******"
+      -- Run generator.
+      txGenerator benchTracer
+                  pInfoConfig
+                  recipientAddress
+                  sourceKey
+                  txFee
+                  numOfTxs
+                  numOfInsPerTx
+                  numOfOutsPerTx
+                  txAdditionalSize
 
-  -- Launch tx submission threads.
-  liftIO $ launchTxPeer
-             benchTracer
-             benchmarkTracers
-             txSubmissionTerm
-             pInfoConfig
-             localAddr
-             remoteAddr
-             updROEnv
-             txsForSubmission
+      liftIO . traceWith benchTracer . TraceBenchTxSubDebug
+        $ "******* Tx generator, launch submission threads... *******"
+
+      -- Launch tx submission threads.
+      liftIO $ launchTxPeer
+                 benchTracer
+                 benchmarkTracers
+                 txSubmissionTerm
+                 pInfoConfig
+                 localAddr
+                 remoteAddr
+                 updROEnv
+                 txsForSubmission
 
 -- | At this moment 'sourceAddress' contains a huge amount of money (lets call it A).
 --   Now we have to split this amount to N equal parts, as a result we'll have
