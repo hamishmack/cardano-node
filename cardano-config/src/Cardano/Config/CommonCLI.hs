@@ -34,6 +34,7 @@ module Cardano.Config.CommonCLI
   , parseSlotLengthLast
   , parseSocketDir
   , parseSocketDirLast
+  , parseSocketPath
   -- Last Parsers
   , parseSigningKeyLast
 
@@ -141,6 +142,14 @@ parseSocketDir =
         <> metavar "FILEPATH"
         <> help "Directory with local sockets:\
                 \  ${dir}/node-{core,relay}-${node-id}.socket"
+    )
+parseSocketPath :: Parser SocketPath
+parseSocketPath =
+  SocketPath <$> strOption
+    ( Opt.long "socket-path"
+    <> Opt.help "Path to a cardano-node socket"
+    <> Opt.completer (Opt.bashCompleter "file")
+    <> Opt.metavar "FILEPATH"
     )
 
 parseSocketDirLast :: Parser (Last FilePath)
