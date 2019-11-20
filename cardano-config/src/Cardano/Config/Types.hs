@@ -10,9 +10,11 @@ module Cardano.Config.Types
     , GenesisFile (..)
     , LastKnownBlockVersion (..)
     , MiscellaneousFilepaths (..)
-    , NodeCLI (..)
     , NodeConfiguration (..)
     , Protocol (..)
+    , NodeMockCLI (..)
+    , NodeCLI (..)
+    , NodeProtocolMode (..)
     , SigningKeyFile (..)
     , SocketFile (..)
     , TopologyFile (..)
@@ -51,12 +53,25 @@ data CardanoEnvironment = NoEnvironment
 --------------------------------------------------------------------------------
 
 data NodeCLI = NodeCLI
+    { realMscFp :: !MiscellaneousFilepaths
+    , realGenesisHash :: !Text
+    , realNodeAddr :: !NodeAddress
+    , realConfigFp :: !ConfigYamlFilePath
+    , realValidateDB :: !Bool
+    }
+
+data NodeMockCLI = NodeMockCLI
     { mscFp :: !MiscellaneousFilepaths
     , genesisHash :: !Text
     , nodeAddr :: !NodeAddress
     , configFp :: !ConfigYamlFilePath
     , validateDB :: !Bool
     } deriving Show
+
+-- | Mock protocols requires different parameters to real protocols.
+-- Therefore we distinguish this at the top level on the command line.
+data NodeProtocolMode = MockProtocolMode NodeMockCLI
+                      | RealProtocolMode NodeCLI
 
 -- | Filepath of the configuration yaml file. This file determines
 -- all the configuration settings required for the cardano node
@@ -68,7 +83,7 @@ newtype ConfigYamlFilePath = ConfigYamlFilePath
 data MiscellaneousFilepaths = MiscellaneousFilepaths
   { topFile :: !TopologyFile
   , dBFile :: !DbFile
-  , genesisFile :: !GenesisFile
+  , genesisFile :: !(Maybe GenesisFile)
   , delegCertFile :: !(Maybe DelegationCertFile)
   , signKeyFile :: !(Maybe SigningKeyFile)
   , socketFile :: !SocketFile

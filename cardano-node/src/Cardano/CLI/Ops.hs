@@ -213,7 +213,7 @@ withRealPBFT gHash nId mNumNodes genFile nMagic sigThresh delCertFp sKeyFp updat
                           gHash
                           nId
                           mNumNodes
-                          genFile
+                          (Just genFile)
                           nMagic
                           sigThresh
                           delCertFp

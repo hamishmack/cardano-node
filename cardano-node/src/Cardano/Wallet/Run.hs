@@ -37,7 +37,7 @@ runClient (WalletCLI config delegCertFile gHash gFile sKeyFile socketFp) tracer 
                                     gHash
                                     (ncNodeId nc)
                                     (ncNumCoreNodes nc)
-                                    gFile
+                                    (Just gFile)
                                     (ncReqNetworkMagic nc)
                                     (ncPbftSignatureThresh nc)
                                     delegCertFile

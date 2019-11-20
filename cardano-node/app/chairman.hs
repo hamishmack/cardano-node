@@ -47,7 +47,7 @@ main = do
                                  caGenesisHash
                                  (ncNodeId nc)
                                  (ncNumCoreNodes nc)
-                                 (caGenesisFile)
+                                 (Just caGenesisFile)
                                  (ncReqNetworkMagic nc)
                                  (ncPbftSignatureThresh nc)
                                  (caDelegationCertFp)
