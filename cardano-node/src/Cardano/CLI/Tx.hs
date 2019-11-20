@@ -139,7 +139,7 @@ withRealPBFT
   -> Maybe Int
   -> GenesisFile
   -> RequiresNetworkMagic
-  -> (Maybe Double)
+  -> Maybe Double
   -> Maybe DelegationCertFile
   -> Maybe SigningKeyFile
   -> Update
@@ -153,7 +153,7 @@ withRealPBFT gHash nId mNumNodes genFile nMagic sigThresh delCertFp sKeyFp updat
                       gHash
                       nId
                       mNumNodes
-                      genFile
+                      (Just genFile)
                       nMagic
                       sigThresh
                       delCertFp

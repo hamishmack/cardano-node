@@ -10,11 +10,15 @@ import           Cardano.Shell.Lib (runCardanoApplicationWithFeatures)
 import           Cardano.Shell.Types (CardanoApplication (..))
 
 import           Cardano.Config.Types
-import           Cardano.Common.Parsers (nodeCliParser)
+import           Cardano.Common.Parsers (nodeProtocolModeParser)
 import           Cardano.Tracing.TraceAcceptor (runTraceAcceptor)
 
 main :: IO ()
 main = do
+  -- TODO: Trace acceptor only needs to create the logging layer
+  -- therefore it should only need to parse a file path. Need to
+  -- implement a `createLoggingFeatureTraceAcceptor` that only
+  -- requires a filepath for the relevant `.yaml` file.
   nCli <- Opt.customExecParser pref opts
   (,) loggingLayer
       loggingFeature <- createLoggingFeature env nCli
@@ -30,9 +34,9 @@ main = do
     pref :: Opt.ParserPrefs
     pref = Opt.prefs Opt.showHelpOnEmpty
 
-    opts :: Opt.ParserInfo NodeCLI
+    opts :: Opt.ParserInfo NodeProtocolMode
     opts =
-      Opt.info (nodeCliParser <**> Opt.helper)
+      Opt.info (nodeProtocolModeParser <**> Opt.helper)
         ( Opt.fullDesc
           <> Opt.header
           "trace-acceptor - utility to support a variety of key\
