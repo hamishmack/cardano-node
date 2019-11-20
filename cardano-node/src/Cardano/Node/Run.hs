@@ -70,7 +70,7 @@ import           Ouroboros.Storage.ImmutableDB (ValidationPolicy (..))
 import           Cardano.Common.LocalSocket
 import           Cardano.Config.Protocol (SomeProtocol(..), fromProtocol)
 import           Cardano.Config.Topology
-import           Cardano.Config.Types (DbFile(..), NodeCLI(..),
+import           Cardano.Config.Types (DbFile(..), NodeMockCLI(..),
                                        SocketFile(..), TopologyFile(..))
 import           Cardano.Tracing.Tracers
 #ifdef UNIX
@@ -81,7 +81,7 @@ import           Cardano.Node.TUI.LiveView
 runNode
   :: LoggingLayer
   -> NodeConfiguration
-  -> NodeCLI
+  -> NodeMockCLI
   -> IO ()
 runNode loggingLayer nc nCli = do
     hn <- hostname
@@ -95,14 +95,14 @@ runNode loggingLayer nc nCli = do
                              MinimalVerbosity -> "minimal"
                              MaximalVerbosity -> "maximal"
     eitherSomeProtocol <- runExceptT $ fromProtocol
-                                         (genesisHash nCli)
+                                         (mockGenesisHash nCli)
                                          (ncNodeId nc)
                                          (ncNumCoreNodes nc)
-                                         (genesisFile $ mscFp nCli)
+                                         (genesisFile $ mockMscFp nCli)
                                          (ncReqNetworkMagic nc)
                                          (ncPbftSignatureThresh nc)
-                                         (delegCertFile $ mscFp nCli)
-                                         (signKeyFile $ mscFp nCli)
+                                         (delegCertFile $ mockMscFp nCli)
+                                         (signKeyFile $ mockMscFp nCli)
                                          (ncUpdate nc)
                                          (ncProtocol nc)
 
@@ -147,12 +147,12 @@ handleSimpleNode :: forall blk. RunNode blk
                  => Consensus.Protocol blk
                  -> Tracer IO (LogObject Text)
                  -> Tracers ConnectionId blk
-                 -> NodeCLI
+                 -> NodeMockCLI
                  -> NodeConfiguration
                  -> IO ()
 handleSimpleNode p trace nodeTracers nCli nc = do
     NetworkTopology nodeSetups <-
-      either error id <$> readTopologyFile (unTopology . topFile $ mscFp nCli)
+      either error id <$> readTopologyFile (unTopology . topFile $ mockMscFp nCli)
 
     let pInfo@ProtocolInfo{ pInfoConfig = cfg } = protocolInfo p
 
@@ -164,14 +164,14 @@ handleSimpleNode p trace nodeTracers nCli nc = do
                           map (\ns -> (nodeId ns, producers ns)) nodeSetups of
           Just ps -> ps
           Nothing -> error $ "handleSimpleNode: own address "
-                          <> show (nodeAddr nCli)
+                          <> show (mockNodeAddr nCli)
                           <> ", Node Id "
                           <> show nid
                           <> " not found in topology"
 
     traceWith tracer $ unlines
       [ "**************************************"
-      , "I am Node "        <> show (nodeAddr nCli) <> " Id: " <> show nid
+      , "I am Node "        <> show (mockNodeAddr nCli) <> " Id: " <> show nid
       , "My producers are " <> show producers'
       , "**************************************"
       ]
@@ -179,10 +179,10 @@ handleSimpleNode p trace nodeTracers nCli nc = do
     -- Socket directory
     myLocalAddr <- localSocketAddrInfo
                      (ncNodeId nc)
-                     (unSocket . socketFile $ mscFp nCli)
+                     (unSocket . socketFile $ mockMscFp nCli)
                      MkdirIfMissing
 
-    addrs <- nodeAddressInfo $ nodeAddr nCli
+    addrs <- nodeAddressInfo $ mockNodeAddr nCli
     let ipProducerAddrs  :: [NodeAddress]
         dnsProducerAddrs :: [RemoteAddress]
         (ipProducerAddrs, dnsProducerAddrs) = partitionEithers
@@ -228,13 +228,13 @@ handleSimpleNode p trace nodeTracers nCli nc = do
           , daDnsProducers          = dnsProducers
           }
 
-    removeStaleLocalSocket (ncNodeId nc) (unSocket . socketFile $ mscFp nCli)
+    removeStaleLocalSocket (ncNodeId nc) (unSocket . socketFile $ mockMscFp nCli)
 
-    dbPath <- canonicalizePath =<< makeAbsolute (unDB . dBFile $ mscFp nCli)
+    dbPath <- canonicalizePath =<< makeAbsolute (unDB . dBFile $ mockMscFp nCli)
 
     varTip <- atomically $ newTVar GenesisPoint
 
-    when (validateDB nCli) $
+    when (mockValidateDB nCli) $
       traceWith tracer "Performing DB validation"
 
     Node.run
@@ -265,7 +265,7 @@ handleSimpleNode p trace nodeTracers nCli nc = do
     customiseChainDbArgs :: ChainDB.ChainDbArgs IO blk
                          -> ChainDB.ChainDbArgs IO blk
     customiseChainDbArgs args = args
-      { ChainDB.cdbValidation = if validateDB nCli
+      { ChainDB.cdbValidation = if mockValidateDB nCli
           then ValidateAllEpochs
           else ValidateMostRecentEpoch
       }
