@@ -6,7 +6,8 @@
 module Cardano.Common.Parsers
   ( cliTracingParser
   , loggingParser
-  , nodeCliParser
+  , nodeMockParser
+  , nodeProtocolModeParser
   , parseConfigFile
   , parseCoreNodeId
   , parseDbPath
@@ -58,21 +59,83 @@ import           Cardano.Config.Types
 cliTracingParser :: Parser (Last TraceOptions)
 cliTracingParser = Last . Just <$> parseTraceOptions Opt.hidden
 
--- | The product parser for all the CLI arguments.
-nodeCliParser :: Parser NodeCLI
-nodeCliParser = do
+
+nodeProtocolModeParser  :: Parser NodeProtocolMode
+nodeProtocolModeParser = nodeRealProtocolModeParser <|> nodeMockProtocolModeParser
+
+nodeMockProtocolModeParser :: Parser NodeProtocolMode
+nodeMockProtocolModeParser = subparser
+                           (  commandGroup "Execute node with a mock protocol."
+                           <> metavar "run-mock"
+                           <> command "run-mock"
+                                (MockProtocolMode
+                                  <$> info
+                                        (nodeMockParser <**> helper)
+                                        (progDesc "Execute node with a mock protocol."))
+                           )
+nodeRealProtocolModeParser :: Parser NodeProtocolMode
+nodeRealProtocolModeParser = subparser
+                           (  commandGroup "Execute node with a real protocol."
+                           <> metavar "run"
+                           <> command "run"
+                                (RealProtocolMode
+                                  <$> info
+                                        (nodeRealParser <**> helper)
+                                        (progDesc "Execute node with a real protocol." ))
+                           )
+
+
+-- | The mock protocol parser.
+nodeMockParser :: Parser NodeMockCLI
+nodeMockParser = do
   -- Filepaths
   topFp <- parseTopologyFile
   dbFp <- parseDbPath
-  genFp <- parseGenesisPath
+  socketFp <- parseSocketDir <|> parseSocketPath
+
+  genHash <- parseGenesisHash
+
+  -- NodeConfiguration filepath
+  nodeConfigFp <- parseConfigFile
+
+  -- Node Address
+  nAddress <- parseNodeAddress
+
+  -- TraceOptions
+  traceOptions <- cliTracingParser
+
+
+  pure $ NodeMockCLI
+           { mscFp = MiscellaneousFilepaths
+             { topFile = TopologyFile topFp
+             , dBFile = DbFile dbFp
+             , genesisFile = Nothing
+             , delegCertFile = Nothing
+             , signKeyFile = Nothing
+             , socketFile = SocketFile socketFp
+             }
+           , genesisHash = genHash
+           , nodeAddr = nAddress
+           , configFp = ConfigYamlFilePath nodeConfigFp
+           , traceOpts = fromMaybe (panic "Cardano.Common.Parsers: Trace Options were not specified") $ getLast traceOptions
+           }
+
+-- | The real protocol parser.
+nodeRealParser :: Parser NodeCLI
+nodeRealParser = do
+  -- Filepaths
+  topFp <- parseTopologyFile
+  dbFp <- parseDbPath
+  genFp <- optional parseGenesisPath
   delCertFp <- optional parseDelegationCert
   sKeyFp <- optional parseSigningKey
-  socketFp <- parseSocketDir
+  socketFp <- parseSocketPath <|> parseSocketDir
 
   genHash <- parseGenesisHash
 
   -- Node Address
   nAddress <- parseNodeAddress
+
   -- NodeConfiguration filepath
   nodeConfigFp <- parseConfigFile
 
@@ -82,20 +145,22 @@ nodeCliParser = do
   validate <- parseValidateDB
 
   pure NodeCLI
-    { mscFp = MiscellaneousFilepaths
+    { realMscFp = MiscellaneousFilepaths
       { topFile = TopologyFile topFp
       , dBFile = DbFile dbFp
-      , genesisFile = GenesisFile genFp
+      , genesisFile = GenesisFile <$> genFp
       , delegCertFile = DelegationCertFile <$> delCertFp
       , signKeyFile = SigningKeyFile <$> sKeyFp
       , socketFile = SocketFile socketFp
       }
-    , genesisHash = genHash
-    , nodeAddr = nAddress
-    , configFp = ConfigYamlFilePath nodeConfigFp
-    , traceOpts = fromMaybe (panic "Cardano.Common.Parsers: Trace Options were not specified") $ getLast traceOptions
+    , realGenesisHash = genHash
+    , realNodeAddr = nAddress
+    , realConfigFp = ConfigYamlFilePath nodeConfigFp
+    , realTraceOpts = fromMaybe (panic "Cardano.Common.Parsers: Trace Options were not specified") $ getLast traceOptions
     , validateDB = validate
     }
+
+
 
 parseConfigFile :: Parser FilePath
 parseConfigFile =

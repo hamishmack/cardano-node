@@ -70,7 +70,7 @@ import           Ouroboros.Storage.ImmutableDB (ValidationPolicy (..))
 import           Cardano.Common.LocalSocket
 import           Cardano.Config.Protocol (SomeProtocol(..), fromProtocol)
 import           Cardano.Config.Topology
-import           Cardano.Config.Types (DbFile(..), NodeCLI(..),
+import           Cardano.Config.Types (DbFile(..), NodeMockCLI(..),
                                        SocketFile(..), TopologyFile(..))
 import           Cardano.Tracing.Tracers
 #ifdef UNIX
@@ -81,7 +81,7 @@ import           Cardano.Node.TUI.LiveView
 runNode
   :: LoggingLayer
   -> NodeConfiguration
-  -> NodeCLI
+  -> NodeMockCLI
   -> IO ()
 runNode loggingLayer nc nCli = do
     hn <- hostname
@@ -147,7 +147,7 @@ handleSimpleNode :: forall blk. RunNode blk
                  => Consensus.Protocol blk
                  -> Tracer IO (LogObject Text)
                  -> Tracers ConnectionId blk
-                 -> NodeCLI
+                 -> NodeMockCLI
                  -> NodeConfiguration
                  -> IO ()
 handleSimpleNode p trace nodeTracers nCli nc = do

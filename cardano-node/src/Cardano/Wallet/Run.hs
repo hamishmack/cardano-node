@@ -26,7 +26,7 @@ import           Cardano.Wallet.Client
 
 runClient :: WalletCLI -> Trace IO Text -> IO ()
 runClient WalletCLI{ waNodeCli , waGenesisHash} tracer = do
-    nc <- parseNodeConfiguration . unConfigPath $ configFp waNodeCli
+    nc <- parseNodeConfiguration . unConfigPath $ realConfigFp waNodeCli
     let coreNodeId = case ncNodeId nc of
                        Nothing -> panic "Cardano.Wallet.Run.runClient: NodeId not specified"
                        Just (CoreId num) -> CoreNodeId num
