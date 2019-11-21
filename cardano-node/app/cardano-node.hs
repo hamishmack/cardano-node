@@ -65,36 +65,14 @@ initializeAllFeatures
   :: NodeProtocolMode
   -> CardanoEnvironment
   -> IO ([CardanoFeature], NodeLayer)
-initializeAllFeatures nCli@(RealProtocolMode nC@NodeCLI { realConfigFp = ncFp })
-                       cardanoEnvironment = do
-  (loggingLayer, loggingFeature) <- createLoggingFeature cardanoEnvironment nCli
-
-  nodeConfig <- parseNodeConfiguration $ unConfigPath ncFp
-  (nodeLayer   , nodeFeature)    <-
-    createNodeFeature
-      loggingLayer
-      cardanoEnvironment
-      nodeConfig
-      nC
+initializeAllFeatures npm cardanoEnvironment = do
+  (loggingLayer, loggingFeature) <- createLoggingFeature cardanoEnvironment npm
+  (nodeLayer   , nodeFeature)    <- createNodeFeature
+                                      loggingLayer
+                                      cardanoEnvironment
+                                      npm
 
   pure ([ loggingFeature
         , nodeFeature
         ] :: [CardanoFeature]
        , nodeLayer)
-
-initializeAllFeatures nCli@(MockProtocolMode nC@NodeMockCLI { configFp = ncFp })
-                       cardanoEnvironment = do
-    (loggingLayer, loggingFeature) <- createLoggingFeature cardanoEnvironment nCli
-
-    nodeConfig <- parseNodeConfiguration $ unConfigPath ncFp
-    (nodeLayer   , nodeFeature)    <-
-      createNodeFeature
-        loggingLayer
-        cardanoEnvironment
-        nodeConfig
-        nC
-
-    pure ([ loggingFeature
-          , nodeFeature
-          ] :: [CardanoFeature]
-         , nodeLayer)
