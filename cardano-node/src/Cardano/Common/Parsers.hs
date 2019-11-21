@@ -7,7 +7,9 @@ module Cardano.Common.Parsers
   ( cliTracingParser
   , loggingParser
   , nodeMockParser
+  , nodeMockProtocolModeParser
   , nodeProtocolModeParser
+  , nodeRealParser
   , parseConfigFile
   , parseCoreNodeId
   , parseDbPath

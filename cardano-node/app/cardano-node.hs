@@ -68,36 +68,28 @@ initializeAllFeatures
   :: NodeProtocolMode
   -> CardanoEnvironment
   -> IO ([CardanoFeature], NodeLayer)
-initializeAllFeatures nCli@NodeCLI { configFp = ncFp }
-                       cardanoEnvironment = do
-  (loggingLayer, loggingFeature) <- createLoggingFeature cardanoEnvironment rnCli
-
-  nodeConfig <- parseNodeConfiguration $ unConfigPath ncFp
+initializeAllFeatures rpm cardanoEnvironment = do
+  (loggingLayer, loggingFeature) <- createLoggingFeature cardanoEnvironment rpm
   (nodeLayer   , nodeFeature)    <-
     createNodeFeature
       loggingLayer
       cardanoEnvironment
-      nodeConfig
-      rnCli
+      rpm
 
   pure ([ loggingFeature
         , nodeFeature
         ] :: [CardanoFeature]
        , nodeLayer)
 
-initializeAllFeatures nCli@NodeCLI { configFp = ncFp }
-                       cardanoEnvironment = do
-    (loggingLayer, loggingFeature) <- createLoggingFeature cardanoEnvironment mnCli
+initializeAllFeatures mpm cardanoEnvironment = do
+  (loggingLayer, loggingFeature) <- createLoggingFeature cardanoEnvironment mpm
+  (nodeLayer   , nodeFeature)    <-
+    createNodeFeature
+      loggingLayer
+      cardanoEnvironment
+      mpm
 
-    nodeConfig <- parseNodeConfiguration $ unConfigPath ncFp
-    (nodeLayer   , nodeFeature)    <-
-      createNodeFeature
-        loggingLayer
-        cardanoEnvironment
-        nodeConfig
-        mnCli
-
-    pure ([ loggingFeature
-          , nodeFeature
-          ] :: [CardanoFeature]
-         , nodeLayer)
+  pure ([ loggingFeature
+        , nodeFeature
+        ] :: [CardanoFeature]
+       , nodeLayer)

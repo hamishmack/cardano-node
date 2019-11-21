@@ -31,6 +31,7 @@ function commonargs() {
 }
 
 function acceptorargs() {
+        printf -- "mock-protocol "
         commonargs
         nodecfg acceptor
         dlgkey 0

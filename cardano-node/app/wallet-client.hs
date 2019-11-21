@@ -14,12 +14,12 @@ import           Cardano.Shell.Types (CardanoApplication (..),
                                       CardanoFeature (..))
 
 import           Cardano.Config.CommonCLI
-import           Cardano.Config.Types (CardanoEnvironment (..))
+import           Cardano.Config.Types (CardanoEnvironment (..), NodeProtocolMode (..))
 import           Cardano.Config.Logging (LoggingCLIArguments (..),
                                                 LoggingLayer (..),
                                                 createLoggingFeature
                                                 )
-import           Cardano.Common.Parsers (loggingParser, nodeCliParser)
+import           Cardano.Common.Parsers (loggingParser, nodeRealParser)
 import           Cardano.Wallet.Run
 
 -- | The product type of all command line arguments
@@ -34,7 +34,7 @@ commandLineParser = ArgParser
 
 parseWalletCLI :: Parser WalletCLI
 parseWalletCLI = WalletCLI
-    <$> nodeCliParser
+    <$> nodeRealParser
     <*> parseGenesisHash
 
 -- | Top level parser with info.
@@ -62,7 +62,7 @@ main = do
 
 initializeAllFeatures :: ArgParser  -> CardanoEnvironment -> IO ([CardanoFeature], NodeLayer)
 initializeAllFeatures (ArgParser _ cli) cardanoEnvironment = do
-    (loggingLayer, loggingFeature) <- createLoggingFeature cardanoEnvironment $ waNodeCli cli
+    (loggingLayer, loggingFeature) <- createLoggingFeature cardanoEnvironment . RealProtocolMode $ waNodeCli cli
     (nodeLayer   , nodeFeature)    <- createNodeFeature loggingLayer cli cardanoEnvironment
 
     -- Here we return all the features.
