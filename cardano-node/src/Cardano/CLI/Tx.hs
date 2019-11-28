@@ -50,7 +50,7 @@ import           Cardano.CLI.Ops
 import           Cardano.CLI.Tx.Submission
 import           Cardano.Config.Protocol
 import           Cardano.Config.Types (DelegationCertFile, GenesisFile,
-                                       SigningKeyFile, SocketFile, Update)
+                                       SigningKeyFile, SocketPath, Update)
 import           Cardano.Config.Topology
 import           Cardano.Common.Orphans ()
 
@@ -262,7 +262,7 @@ nodeSubmitTx
   -> Maybe Double
   -> Maybe DelegationCertFile
   -> Maybe SigningKeyFile
-  -> SocketFile
+  -> SocketPath
   -> Update
   -> Protocol
   -> GenTx ByronBlock
