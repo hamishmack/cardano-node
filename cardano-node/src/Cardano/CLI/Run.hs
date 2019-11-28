@@ -66,8 +66,12 @@ import           Cardano.CLI.Tx.Generation (NumberOfTxs (..),
                                             genesisBenchmarkRunner)
 import           Cardano.Common.Orphans ()
 import           Cardano.Config.Protocol
-import           Cardano.Config.Types
 import           Cardano.Config.Logging (createLoggingFeatureCLI)
+import           Cardano.Config.Types ( CardanoEnvironment(..), DelegationCertFile(..)
+                                      , GenesisFile(..), LastKnownBlockVersion(..)
+                                      , NodeConfiguration(..), SigningKeyFile(..)
+                                      , SocketPath(..), Update(..)
+                                      , parseNodeConfiguration)
 import           Cardano.Config.Topology (NodeAddress(..), TopologyInfo(..))
 
 -- | Sub-commands of 'cardano-cli'.
@@ -139,7 +143,7 @@ data ClientCommand
     Protocol
     GenesisFile
     Text
-    SocketFile
+    SocketPath
   | SpendGenesisUTxO
     Protocol
     GenesisFile
@@ -175,7 +179,7 @@ data ClientCommand
     GenesisFile
     Text
     -- ^ Genesis hash
-    SocketFile
+    SocketPath
     Protocol
     (NonEmpty NodeAddress)
     NumberOfTxs

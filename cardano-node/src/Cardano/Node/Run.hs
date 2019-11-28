@@ -71,8 +71,7 @@ import           Cardano.Common.LocalSocket
 import           Cardano.Config.Protocol (SomeProtocol(..), fromProtocol)
 import           Cardano.Config.Topology
 import           Cardano.Config.Types (ConfigYamlFilePath(..), DbFile(..), NodeMockCLI(..),
-                                       NodeProtocolMode (..), NodeCLI(..),
-                                       SocketFile(..), TopologyFile(..),
+                                       NodeProtocolMode (..), NodeCLI(..),TopologyFile(..),
                                        parseNodeConfiguration)
 import           Cardano.Tracing.Tracers
 #ifdef UNIX
@@ -165,7 +164,6 @@ handleSimpleNode p trace nodeTracers npm = do
       nc <- parseNodeConfiguration $ unConfigPath config
       let pInfo@ProtocolInfo{ pInfoConfig = cfg } = protocolInfo p
 
-      hn <- getHostName
       -- Tracing
       let tracer = contramap pack $ toLogObject trace
 
@@ -174,17 +172,13 @@ handleSimpleNode p trace nodeTracers npm = do
 
       traceWith tracer $ unlines
         [ "**************************************"
-        , "Hostname: " <> hn
+        , "Node IP: " <> (show $ naHostAddress rNodeAddr)
         , "My producers are "
         , "**************************************"
         ]
 
-
       -- Socket directory
-      myLocalAddr <- localSocketAddrInfo
-                       Nothing
-                       (unSocket $ socketFile rMscFp)
-                       MkdirIfMissing
+      myLocalAddr <- localSocketAddrInfo $ socketFile rMscFp
 
       addrs <- nodeAddressInfo rNodeAddr
 
@@ -232,7 +226,7 @@ handleSimpleNode p trace nodeTracers npm = do
             , daDnsProducers          = dnsProducers
             }
 
-      removeStaleLocalSocket Nothing (unSocket $ socketFile rMscFp)
+      removeStaleLocalSocket  $ socketFile rMscFp
       dbPath <- canonicalizePath =<< makeAbsolute (unDB $ dBFile rMscFp)
       varTip <- atomically $ newTVar GenesisPoint
 
@@ -264,7 +258,7 @@ handleSimpleNode p trace nodeTracers npm = do
 
       let pInfo@ProtocolInfo{ pInfoConfig = cfg } = protocolInfo p
 
-      -- Tracing
+                    -- Tracing
       let tracer = contramap pack $ toLogObject trace
       traceWith tracer $ "System started at " <> show (nodeStartTime (Proxy @blk) cfg)
 
@@ -278,7 +272,7 @@ handleSimpleNode p trace nodeTracers npm = do
                                        <> show (nid nc)
                                        <> " not found in topology"
 
-       ----------------------------------------------
+      ----------------------------------------------
 
       traceWith tracer $ unlines
         [ "**************************************"
@@ -288,10 +282,7 @@ handleSimpleNode p trace nodeTracers npm = do
         ]
 
       -- Socket directory
-      myLocalAddr <- localSocketAddrInfo
-                        (ncNodeId nc)
-                        (unSocket $ socketFile mMscFp)
-                        MkdirIfMissing
+      myLocalAddr <- localSocketAddrInfo $ socketFile mMscFp
 
       addrs <- nodeAddressInfo mockNodeAddr
       let ipProducerAddrs  :: [NodeAddress]
@@ -336,7 +327,7 @@ handleSimpleNode p trace nodeTracers npm = do
             , daDnsProducers          = dnsProducers
             }
 
-      removeStaleLocalSocket (ncNodeId nc) (unSocket $ socketFile mMscFp)
+      removeStaleLocalSocket $ socketFile mMscFp
       dbPath <- canonicalizePath =<< makeAbsolute (unDB $ dBFile mMscFp)
 
       varTip <- atomically $ newTVar GenesisPoint
