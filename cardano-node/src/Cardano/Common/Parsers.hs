@@ -28,7 +28,7 @@ module Cardano.Common.Parsers
   , parseProtocolMockPBFT
   , parseProtocolPraos
   , parseProtocolRealPBFT
-  , parseSocketDir
+  , parseSocketPath
   , parseTopologyInfo
   , parseTraceOptions
   ) where
@@ -93,7 +93,7 @@ nodeMockParser = do
   -- Filepaths
   topFp <- parseTopologyFile
   dbFp <- parseDbPath
-  socketFp <- parseSocketDir <|> parseSocketPath
+  socketFp <- parseSocketPath "Path to a cardano-node socket"
 
   genHash <- parseGenesisHash
 
@@ -114,7 +114,7 @@ nodeMockParser = do
              , genesisFile = Nothing
              , delegCertFile = Nothing
              , signKeyFile = Nothing
-             , socketFile = SocketFile socketFp
+             , socketFile = socketFp
              }
            , genesisHash = genHash
            , nodeAddr = nAddress
@@ -131,7 +131,7 @@ nodeRealParser = do
   genFp <- optional parseGenesisPath
   delCertFp <- optional parseDelegationCert
   sKeyFp <- optional parseSigningKey
-  socketFp <- parseSocketPath <|> parseSocketDir
+  socketFp <- parseSocketPath "Path to a cardano-node socket"
 
   genHash <- parseGenesisHash
 
@@ -153,7 +153,7 @@ nodeRealParser = do
       , genesisFile = GenesisFile <$> genFp
       , delegCertFile = DelegationCertFile <$> delCertFp
       , signKeyFile = SigningKeyFile <$> sKeyFp
-      , socketFile = SocketFile socketFp
+      , socketFile = socketFp
       }
     , realGenesisHash = genHash
     , realNodeAddr = nAddress
@@ -239,15 +239,6 @@ parsePort =
           long "port"
        <> metavar "PORT"
        <> help "The port number"
-    )
-
-parseSocketDir :: Parser FilePath
-parseSocketDir =
-  strOption
-    ( long "socket-dir"
-        <> metavar "FILEPATH"
-        <> help "Directory with local sockets:\
-                \  ${dir}/node-{core,relay}-${node-id}.socket"
     )
 
 parseValidateDB :: Parser Bool
@@ -568,6 +559,15 @@ parseProtocolTraceOptions m = ProtocolTracers
   <*> (Const <$> parseTraceTxSubmissionProtocol m)
   <*> (Const <$> parseTraceLocalChainSyncProtocol m)
   <*> (Const <$> parseTraceLocalTxSubmissionProtocol m)
+
+parseSocketPath :: Text -> Parser SocketPath
+parseSocketPath helpMessage =
+  SocketFile <$> strOption
+    ( long "socket-path"
+        <> (help $ toS helpMessage)
+        <> completer (bashCompleter "file")
+        <> metavar "FILEPATH"
+    )
 
 parseTraceIpSubscription :: MParser Bool
 parseTraceIpSubscription m =

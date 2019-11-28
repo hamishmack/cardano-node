@@ -1,0 +1,7 @@
+[beast:cardano.node.IpSubscription:Notice:92] [2019-12-06 16:42:49.82 UTC] {"event":"Waiting 0.25s before attempting a new connection","dests":"[127.0.0.1:7777]","kind":"WithIPList SubscriptionTrace","localAddresses":"LocalAddresses {laIpv4 = Just 0.0.0.0:0, laIpv6 = Nothing, laUnix = Nothing}"}
+[beast:cardano.node.IpSubscription:Notice:95] [2019-12-06 16:42:49.82 UTC] {"event":"Connection Attempt End, destination 127.0.0.1:7777 outcome: ConnectSuccessLast","dests":"[127.0.0.1:7777]","kind":"WithIPList SubscriptionTrace","localAddresses":"LocalAddresses {laIpv4 = Just 0.0.0.0:0, laIpv6 = Nothing, laUnix = Nothing}"}
+[beast:cardano.node.ChainSyncClient:Notice:118] [2019-12-06 16:42:49.82 UTC] {"kind":"ChainSyncClientEvent.TraceRolledBack","tip":{"kind":"Tip","tip":"genesis(origin)"}}
+[beast:cardano.node.Forge:Warning:79] [2019-12-06 16:42:51.00 UTC] TraceCouldNotForge (SlotNo {unSlotNo = 3472374}) TooFarAhead
+[beast:cardano.node.Forge:Warning:79] [2019-12-06 16:43:11.00 UTC] TraceCouldNotForge (SlotNo {unSlotNo = 3472375}) TooFarAhead
+[beast:cardano.node.Forge:Warning:79] [2019-12-06 16:43:31.00 UTC] TraceCouldNotForge (SlotNo {unSlotNo = 3472376}) TooFarAhead
+[beast:cardano.node.IpSubscription:Error:95] [2019-12-06 16:43:32.61 UTC] {"event":"Application Exception: 127.0.0.1:7777 SubscriberError {seType = SubscriberWorkerCancelled, seMessage = \"SubscriptionWorker exiting\", seStack = []}","dests":"[127.0.0.1:7777]","kind":"WithIPList SubscriptionTrace","localAddresses":"LocalAddresses {laIpv4 = Just 0.0.0.0:0, laIpv6 = Nothing, laUnix = Nothing}"}

@@ -80,16 +80,3 @@ initializeAllFeatures rpm cardanoEnvironment = do
         , nodeFeature
         ] :: [CardanoFeature]
        , nodeLayer)
-
-initializeAllFeatures mpm cardanoEnvironment = do
-  (loggingLayer, loggingFeature) <- createLoggingFeature cardanoEnvironment mpm
-  (nodeLayer   , nodeFeature)    <-
-    createNodeFeature
-      loggingLayer
-      cardanoEnvironment
-      mpm
-
-  pure ([ loggingFeature
-        , nodeFeature
-        ] :: [CardanoFeature]
-       , nodeLayer)

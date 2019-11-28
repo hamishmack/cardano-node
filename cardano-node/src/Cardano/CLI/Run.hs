@@ -69,7 +69,7 @@ import           Cardano.Common.Orphans ()
 import           Cardano.Config.Protocol
 import           Cardano.Config.Types (CardanoConfiguration(..), Core(..),
                                        DelegationCertFile(..), GenesisFile(..),
-                                       SigningKeyFile(..), SocketFile(..))
+                                       SigningKeyFile(..), SocketPath(..))
 import           Cardano.Config.Logging (LoggingLayer (..))
 import           Cardano.Config.Topology (NodeAddress(..), TopologyInfo(..))
 

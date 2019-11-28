@@ -24,14 +24,14 @@ function dlgcert () {
 }
 function commonargs() {
         printf -- "--topology configuration/simple-topology.json "
-        printf -- "--database-path ./db/ "
+        printf -- "--database-path ./db/node-$1 "
         printf -- "--genesis-file ${genesis_file} "
         printf -- "--genesis-hash ${genesis_hash} "
-        printf -- "--socket-dir ./socket/$1 "
+        printf -- "--socket-path ./socket/$1 "
 }
 
 function acceptorargs() {
-        printf -- "mock-protocol "
+        printf -- "run "
         commonargs
         nodecfg acceptor
         dlgkey 0
@@ -41,7 +41,7 @@ function acceptorargs() {
 
 function nodeargs () {
         local extra="$2"
-        commonargs
+        commonargs $1
         nodecfg $1
         dlgkey $1
         dlgcert $1

@@ -1,0 +1,9 @@
+[cardano.node.acceptor:Debug:4] [2019-11-27 15:03:27.96 UTC] **************************************
+[cardano.node.acceptor:Debug:4] [2019-11-27 15:03:27.96 UTC] I am TraceAcceptor
+[cardano.node.acceptor:Debug:4] [2019-11-27 15:03:27.96 UTC] **************************************
+[cardano.#messagecounters.aggregation:Debug:16] [2019-11-27 15:03:27.96 UTC] time_interval_(s) = 0
+[cardano.#messagecounters.monitoring:Debug:19] [2019-11-27 15:03:27.96 UTC] time_interval_(s) = 0
+[beast:cardano.node.IpSubscription:Notice:97] [2019-11-27 15:03:55.08 UTC] {"event":"Waiting 0.25s before attempting a new connection","dests":"[127.0.0.1:7777]","kind":"WithIPList SubscriptionTrace","localAddresses":"LocalAddresses {laIpv4 = Just 0.0.0.0:0, laIpv6 = Nothing, laUnix = Nothing}"}
+[beast:cardano.node.IpSubscription:Notice:98] [2019-11-27 15:03:55.08 UTC] {"event":"Connection Attempt End, destination 127.0.0.1:7777 outcome: ConnectSuccessLast","dests":"[127.0.0.1:7777]","kind":"WithIPList SubscriptionTrace","localAddresses":"LocalAddresses {laIpv4 = Just 0.0.0.0:0, laIpv6 = Nothing, laUnix = Nothing}"}
+[beast:cardano.node.ChainSyncClient:Notice:122] [2019-11-27 15:03:55.09 UTC] {"kind":"ChainSyncClientEvent.TraceRolledBack","tip":{"kind":"Tip","tip":"genesis(origin)"}}
+[beast:cardano.node.IpSubscription:Error:98] [2019-11-27 15:04:09.13 UTC] {"event":"Application Exception: 127.0.0.1:7777 SubscriberError {seType = SubscriberWorkerCancelled, seMessage = \"SubscriptionWorker exiting\", seStack = []}","dests":"[127.0.0.1:7777]","kind":"WithIPList SubscriptionTrace","localAddresses":"LocalAddresses {laIpv4 = Just 0.0.0.0:0, laIpv6 = Nothing, laUnix = Nothing}"}

@@ -25,7 +25,7 @@ exec ${GENERATOR} \
   --delegation-certificate ${CONFIGDIR}/latest-genesis/delegation-cert.000.json \
   --genesis-file ${GENESISJSON} \
   --genesis-hash ${GENESISHASH} \
-  --socket-dir /tmp/cluster3nodes-socket \
+  --socket-path /tmp/cluster3nodes-socket \
   --real-pbft \
   generate-txs \
   --num-of-txs $numtx \
@@ -39,5 +39,3 @@ exec ${GENERATOR} \
   --sig-key ${CONFIGDIR}/latest-genesis/delegate-keys.002.key \
   --node-id 0 \
   ${TARGETNODES}
-
-

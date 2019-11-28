@@ -20,8 +20,7 @@ import           Ouroboros.Consensus.NodeId (CoreNodeId (..), NodeId (..))
 
 import           Cardano.Config.Protocol (ProtocolInstantiationError)
 import           Cardano.Config.Types (ConfigYamlFilePath(..), MiscellaneousFilepaths(..),
-                                       NodeCLI(..), NodeConfiguration(..), SocketFile(..),
-                                       parseNodeConfiguration)
+                                       NodeCLI(..), NodeConfiguration(..), parseNodeConfiguration)
 import           Cardano.Wallet.Client
 
 runClient :: WalletCLI -> Trace IO Text -> IO ()
@@ -39,11 +38,11 @@ runClient WalletCLI{ waNodeCli , waGenesisHash} tracer = do
                                     waGenesisHash
                                     (ncNodeId nc)
                                     (ncNumCoreNodes nc)
-                                    (genesisFile $ mscFp waNodeCli)
+                                    (genesisFile $ realMscFp waNodeCli)
                                     (ncReqNetworkMagic nc)
                                     (ncPbftSignatureThresh nc)
-                                    (delegCertFile $ mscFp waNodeCli)
-                                    (signKeyFile $ mscFp waNodeCli)
+                                    (delegCertFile $ realMscFp waNodeCli)
+                                    (signKeyFile $ realMscFp waNodeCli)
                                     (ncUpdate nc)
                                     (ncProtocol nc)
 
@@ -51,11 +50,12 @@ runClient WalletCLI{ waNodeCli , waGenesisHash} tracer = do
                         Left err -> (putTextLn $ renderError err) >> exitFailure
                         Right (SomeProtocol p) -> pure $ SomeProtocol p
 
-    let socketDir = unSocket . socketFile $ mscFp waNodeCli
+    let socketDir = socketFile $ realMscFp waNodeCli
     runWalletClient p socketDir coreNodeId tracer'
 
 data WalletCLI = WalletCLI { waNodeCli :: !NodeCLI
                            , waGenesisHash :: !Text
                            }
+
 renderError :: ProtocolInstantiationError -> Text
 renderError = pack . show
