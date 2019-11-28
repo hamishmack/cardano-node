@@ -50,7 +50,6 @@ import           Cardano.Crypto (ProtocolMagicId, RequiresNetworkMagic(..))
 import qualified Cardano.Crypto.Hashing as Crypto
 import qualified Cardano.Crypto.Signing as Crypto
 
-import           Ouroboros.Consensus.NodeId
 import qualified Ouroboros.Consensus.Protocol as Consensus
 
 import           Cardano.CLI.Delegation
@@ -189,7 +188,6 @@ data ClientCommand
     TPSRate
     (Maybe TxAdditionalSize)
     [SigningKeyFile]
-    NodeId
    deriving Show
 runCommand :: ClientCommand -> ExceptT CliError IO ()
 runCommand (Genesis outDir params ptcl) = do
@@ -307,7 +305,7 @@ runCommand (GenerateTxs
                delegCert
                genFile
                genHash
-               socketDir
+               socketFp
                ptcl
                targetNodeAddresses
                numOfTxs
@@ -316,8 +314,7 @@ runCommand (GenerateTxs
                feePerTx
                tps
                txAdditionalSize
-               sigKeysFiles
-               nodeId) = do
+               sigKeysFiles) = do
   -- Default update value
   let update = Update (ApplicationName "cardano-sl") 1 $ LastKnownBlockVersion 0 2 0
 
@@ -332,7 +329,7 @@ runCommand (GenerateTxs
     GenerateTxsError
     $  withRealPBFT
          genHash
-         (Just nodeId)
+         Nothing
          Nothing
          genFile
          RequiresNoMagic
@@ -344,7 +341,7 @@ runCommand (GenerateTxs
                         firstExceptT GenesisBenchmarkRunnerError
                           $ genesisBenchmarkRunner
                                loggingLayer
-                               socketDir
+                               socketFp
                                protocol
                                targetNodeAddresses
                                numOfTxs
