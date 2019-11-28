@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+[ $# -ne 1 ] && echo "Usage: $(basename $0) TargetSocketFilePath" 1>&2 && exit 1
+
+SOCKET=$1
+
 set -e
 
 . $(dirname $0)/lib-node.sh
@@ -20,5 +24,5 @@ exec cabal v2-run exe:chairman -- \
                                 -t 1000 \
                                 --genesis-file "${genesis_file}" \
                                 --genesis-hash "${genesis_hash}" \
-                                --socket-dir "./socket/" \
+                                --socket-path "$SOCKET" \
                                 --config "configuration/log-config-0.yaml"

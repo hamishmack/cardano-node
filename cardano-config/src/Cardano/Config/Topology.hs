@@ -140,7 +140,7 @@ data RealNodeTopology = RealNodeTopology { rProducers :: ![RemoteAddress] }
 instance FromJSON RealNodeTopology where
   parseJSON = withObject "RealNodeTopology" $ \v ->
     RealNodeTopology
-      <$> v .: "rProducers"
+      <$> v .: "Producers"
 
 instance FromJSON NodeId where
   parseJSON v = CoreId <$> parseJSON v
