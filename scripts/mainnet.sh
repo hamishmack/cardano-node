@@ -9,7 +9,7 @@ ARGS=(  run
         --database-path           "./db"
         --genesis-file            "configuration/mainnet-genesis.json"
         --topology                "${TOPOLOGY}"
-        --socket-dir              "./socket/"
+        --socket-path             "./socket/mainnet-socket"
         --config                  "./configuration/mainnet.yaml"
         --port                    7776
 )

@@ -19,7 +19,7 @@ import           Ouroboros.Consensus.NodeId (CoreNodeId (..))
 
 import           Cardano.Config.CommonCLI
 import           Cardano.Config.Types (ConfigYamlFilePath(..), MiscellaneousFilepaths(..),
-                                       NodeMockCLI(..), NodeConfiguration(..), SocketFile(..),
+                                       NodeMockCLI(..), NodeConfiguration(..),
                                        parseNodeConfiguration)
 import           Cardano.Wallet.Client
 
@@ -40,7 +40,7 @@ runClient WalletCLI{..} tracer = do
                         (signKeyFile $ mscFp cliNodeCLI)
                         (ncUpdate nc)
                         (ncProtocol nc)
-    let socketDir = unSocket . socketFile $ mscFp cliNodeCLI
+    let socketDir = socketFile $ mscFp cliNodeCLI
     runWalletClient p socketDir cliCoreNodeId tracer'
 
 data WalletCLI = WalletCLI {

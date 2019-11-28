@@ -63,7 +63,7 @@ import qualified Cardano.Chain.Genesis as CC.Genesis
 import qualified Cardano.Chain.MempoolPayload as CC.Mempool
 import qualified Cardano.Chain.UTxO as CC.UTxO
 import           Cardano.Config.Logging (LoggingLayer (..), Trace)
-import           Cardano.Config.Types (SocketFile)
+import           Cardano.Config.Types (SocketPath)
 import qualified Cardano.Crypto as Crypto
 import           Cardano.Config.Topology (NodeAddress (..),
                                           NodeHostAddress(..))
@@ -143,7 +143,7 @@ data TxGenError = CurrentlyCannotSendTxToRelayNode FilePath
 -----------------------------------------------------------------------------------------
 genesisBenchmarkRunner
   :: LoggingLayer
-  -> SocketFile
+  -> SocketPath
   -> Consensus.Protocol ByronBlock
   -> NonEmpty NodeAddress
   -> NumberOfTxs
@@ -390,7 +390,7 @@ extractGenesisFunds genesisConfig signingKeys =
 -- (latter corresponds to 'targetAddress' here) and "remember" it in 'availableFunds'.
 prepareInitialFunds
   :: Tracer IO String
-  -> SocketFile
+  -> SocketPath
   -> CC.Genesis.Config
   -> NodeConfig ByronConsensusProtocol
   -> Map Int ((CC.UTxO.TxIn, CC.UTxO.TxOut), Crypto.SigningKey)
@@ -643,7 +643,7 @@ runBenchmark
   -> Tracer IO SendRecvConnect
   -> Tracer IO (SendRecvTxSubmission ByronBlock)
   -> Tracer IO String
-  -> SocketFile
+  -> SocketPath
   -> NodeConfig ByronConsensusProtocol
   -> Crypto.SigningKey
   -> CC.Common.Address
@@ -764,7 +764,7 @@ runBenchmark benchTracer
 --   Technically all splitting transactions will send money back to 'sourceAddress'.
 createMoreFundCoins
   :: Tracer IO String
-  -> SocketFile
+  -> SocketPath
   -> NodeConfig ByronConsensusProtocol
   -> Crypto.SigningKey
   -> FeePerTx

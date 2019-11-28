@@ -92,7 +92,7 @@ nodeMockParser = do
   -- Filepaths
   topFp <- parseTopologyFile
   dbFp <- parseDbPath
-  socketFp <- parseSocketDir <|> parseSocketPath
+  socketFp <- parseSocketPath
 
   -- NodeConfiguration filepath
   nodeConfigFp <- parseConfigFile
@@ -111,7 +111,7 @@ nodeMockParser = do
               Nothing
               Nothing
               Nothing
-              (SocketFile socketFp)
+              socketFp
             )
            nAddress
            (ConfigYamlFilePath nodeConfigFp)
@@ -126,7 +126,7 @@ nodeRealParser = do
   genFp <- optional parseGenesisPath
   delCertFp <- optional parseDelegationCert
   sKeyFp <- optional parseSigningKey
-  socketFp <- parseSocketPath <|> parseSocketDir
+  socketFp <- parseSocketPath
 
   -- Node Address
   nAddress <- parseNodeAddress
@@ -146,7 +146,7 @@ nodeRealParser = do
       , genesisFile = GenesisFile <$> genFp
       , delegCertFile = DelegationCertFile <$> delCertFp
       , signKeyFile = SigningKeyFile <$> sKeyFp
-      , socketFile = SocketFile socketFp
+      , socketFile = socketFp
       }
     , realNodeAddr = nAddress
     , realConfigFp = ConfigYamlFilePath nodeConfigFp

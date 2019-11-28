@@ -20,7 +20,7 @@ import           Cardano.Config.CommonCLI
 import           Cardano.Config.Protocol (SomeProtocol(..), fromProtocol)
 import           Cardano.Config.Types (ConfigYamlFilePath(..), DelegationCertFile(..),
                                        GenesisFile (..), NodeConfiguration(..),
-                                       SigningKeyFile(..), SocketFile(..), parseNodeConfiguration)
+                                       SigningKeyFile(..), SocketPath(..), parseNodeConfiguration)
 import           Cardano.Common.Parsers
 import           Cardano.Chairman (runChairman)
 
@@ -54,7 +54,7 @@ main = do
     let run = runChairman p caCoreNodeIds
                           caSecurityParam
                           caMaxBlockNo
-                          (unSocket caSocketDir)
+                          caSocketDir
                           stdoutTracer
 
     case caTimeout of
@@ -89,7 +89,7 @@ data ChairmanArgs = ChairmanArgs {
     , caTimeout         :: !(Maybe Int)
     , caTimeoutType :: !TimeoutType
     , caGenesisFile :: !GenesisFile
-    , caSocketDir :: !SocketFile
+    , caSocketDir :: !SocketPath
     , caConfigYaml :: !ConfigYamlFilePath
     , caSigningKeyFp :: !(Maybe SigningKeyFile)
     , caDelegationCertFp :: !(Maybe DelegationCertFile)
@@ -132,7 +132,7 @@ parseChairmanArgs =
       <*> parseFlag' FailureTimeout SuccessTimeout
           "timeout-is-success" "Exit successfully on timeout."
       <*> (GenesisFile <$> parseGenesisPath)
-      <*> (SocketFile <$> parseSocketDir)
+      <*> parseSocketPath
       <*> (ConfigYamlFilePath <$> parseConfigFile)
       <*> (optional $ SigningKeyFile <$> parseSigningKey)
       <*> (optional $ DelegationCertFile <$> parseDelegationCert)

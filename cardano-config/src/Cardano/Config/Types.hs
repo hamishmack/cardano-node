@@ -17,7 +17,7 @@ module Cardano.Config.Types
     , NodeCLI (..)
     , NodeProtocolMode (..)
     , SigningKeyFile (..)
-    , SocketFile (..)
+    , SocketPath (..)
     , TopologyFile( ..)
     -- * specific for @Core@
     , NodeProtocol (..)
@@ -158,7 +158,7 @@ data MiscellaneousFilepaths = MiscellaneousFilepaths
   , genesisFile :: !(Maybe GenesisFile)
   , delegCertFile :: !(Maybe DelegationCertFile)
   , signKeyFile :: !(Maybe SigningKeyFile)
-  , socketFile :: !SocketFile
+  , socketFile :: !SocketPath
   } deriving Show
 
 newtype TopologyFile = TopologyFile
@@ -177,9 +177,8 @@ newtype DelegationCertFile = DelegationCertFile
   { unDelegationCert :: FilePath }
   deriving Show
 
-newtype SocketFile = SocketFile
-  { unSocket :: FilePath }
-  deriving Show
+data SocketPath = SocketFile FilePath
+                deriving Show
 
 newtype SigningKeyFile = SigningKeyFile
   { unSigningKey ::  FilePath }
