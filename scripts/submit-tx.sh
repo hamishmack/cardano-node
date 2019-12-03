@@ -21,8 +21,6 @@ NETARGS=(
         --${ALGO}
         --genesis-file "${genesis_file}"
         --genesis-hash "${genesis_hash}"
-        --socket-dir   "./socket/"
-        --topology     "${configuration}/simple-topology.json"
 )
 
 
