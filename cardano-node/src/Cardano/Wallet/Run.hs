@@ -51,7 +51,7 @@ runClient WalletCLI{ waNodeCli , waGenesisHash} tracer = do
                         Right (SomeProtocol p) -> pure $ SomeProtocol p
 
     let socketDir = socketFile $ realMscFp waNodeCli
-    runWalletClient p socketDir coreNodeId tracer'
+    runWalletClient p socketDir tracer'
 
 data WalletCLI = WalletCLI { waNodeCli :: !NodeCLI
                            , waGenesisHash :: !Text

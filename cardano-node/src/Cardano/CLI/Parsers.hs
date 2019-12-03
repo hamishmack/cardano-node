@@ -501,8 +501,7 @@ parseTxRelatedValues =
         "Submit a raw, signed transaction, in its on-wire representation."
         $ SubmitTx
             <$> parseTxFile "tx"
-            <*> parseTopologyInfo "Target node that will receive the transaction"
-            <*> parseNodeId "Node Id of target node"
+            <*> parseSocketPath "Socket of target node"
     , command'
         "issue-genesis-utxo-expenditure"
         "Write a file with a signed transaction, spending genesis UTxO."

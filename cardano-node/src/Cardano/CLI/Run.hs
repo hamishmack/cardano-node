@@ -71,7 +71,7 @@ import           Cardano.Config.Types (CardanoConfiguration(..), Core(..),
                                        DelegationCertFile(..), GenesisFile(..),
                                        SigningKeyFile(..), SocketPath(..))
 import           Cardano.Config.Logging (LoggingLayer (..))
-import           Cardano.Config.Topology (NodeAddress(..), TopologyInfo(..))
+import           Cardano.Config.Topology (NodeAddress(..))
 
 -- | Sub-commands of 'cardano-cli'.
 data ClientCommand
@@ -122,8 +122,8 @@ data ClientCommand
   | SubmitTx
     TxFile
     -- ^ Filepath of transaction to submit.
-    TopologyInfo
-    NodeId
+    SocketPath
+    -- ^ Socket path of target node.
   | SpendGenesisUTxO
     NewTxFile
     -- ^ Filepath of the newly created transaction.
@@ -213,23 +213,21 @@ runCommand _ _(CheckDelegation magic cert issuerVF delegateVF) = do
   liftIO $ checkByronGenesisDelegation cert magic issuerVK delegateVK
 
 runCommand
-  (CardanoConfiguration{ccCore, ccProtocol, ccSocketDir, ccUpdate})
+  (CardanoConfiguration{ccCore, ccProtocol, ccUpdate})
   _
-  (SubmitTx fp topology nid) = do
+  (SubmitTx fp targetSp) = do
     tx <- liftIO $ readByronTx fp
     firstExceptT
       NodeSubmitTxError
       $ nodeSubmitTx
-          topology
           (coGenesisHash ccCore)
-          (nid)
           (coNumCoreNodes ccCore)
           (GenesisFile $ coGenesisFile ccCore)
           (coRequiresNetworkMagic ccCore)
           (coPBftSigThd ccCore)
           (DelegationCertFile <$> (coStaticKeyDlgCertFile ccCore))
           (SigningKeyFile <$> (coStaticKeySigningKeyFile ccCore))
-          (SocketFile ccSocketDir)
+          targetSp
           ccUpdate
           ccProtocol
           tx
