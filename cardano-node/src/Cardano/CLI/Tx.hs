@@ -51,7 +51,6 @@ import           Cardano.CLI.Tx.Submission
 import           Cardano.Config.Protocol
 import           Cardano.Config.Types (DelegationCertFile, GenesisFile,
                                        SigningKeyFile, SocketPath, Update)
-import           Cardano.Config.Topology
 import           Cardano.Common.Orphans ()
 
 
@@ -253,10 +252,10 @@ issueUTxOExpenditure
 
 -- | Submit a transaction to a node specified by topology info.
 nodeSubmitTx
-  :: TopologyInfo
-  -> Text
+  :: Text
+  -- ^ Genesis hash.
   -> Maybe Int
-  -- ^ Number of core nodes
+  -- ^ Number of core nodes.
   -> GenesisFile
   -> RequiresNetworkMagic
   -> Maybe Double
@@ -268,7 +267,6 @@ nodeSubmitTx
   -> GenTx ByronBlock
   -> ExceptT RealPBFTError IO ()
 nodeSubmitTx
-  topology
   gHash
   mNumCoreNodes
   genFile
@@ -276,7 +274,7 @@ nodeSubmitTx
   sigThresh
   delCertFp
   sKeyFp
-  socketFp
+  targetSocketFp
   update
   ptcl
   gentx =
@@ -288,4 +286,4 @@ nodeSubmitTx
                otherTxType -> left . TransactionTypeNotHandledYet
                                    . T.pack $ show otherTxType
         -- TODO: Update handleTxSubmission to use `ExceptT`
-        liftIO $ handleTxSubmission socketFp p topology gentx stdoutTracer
+        liftIO $ handleTxSubmission targetSocketFp p gentx stdoutTracer
