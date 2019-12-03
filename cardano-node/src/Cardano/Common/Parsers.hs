@@ -92,7 +92,7 @@ nodeMockParser = do
   -- Filepaths
   topFp <- parseTopologyFile
   dbFp <- parseDbPath
-  socketFp <- parseSocketPath
+  socketFp <- parseSocketPath "Path to a cardano-node socket"
 
   -- NodeConfiguration filepath
   nodeConfigFp <- parseConfigFile
@@ -126,7 +126,7 @@ nodeRealParser = do
   genFp <- optional parseGenesisPath
   delCertFp <- optional parseDelegationCert
   sKeyFp <- optional parseSigningKey
-  socketFp <- parseSocketPath
+  socketFp <- parseSocketPath "Path to a cardano-node socket"
 
   -- Node Address
   nAddress <- parseNodeAddress

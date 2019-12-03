@@ -41,7 +41,7 @@ runClient WalletCLI{..} tracer = do
                         (ncUpdate nc)
                         (ncProtocol nc)
     let socketDir = socketFile $ mscFp cliNodeCLI
-    runWalletClient p socketDir cliCoreNodeId tracer'
+    runWalletClient p socketDir tracer'
 
 data WalletCLI = WalletCLI {
     cliCoreNodeId   :: CoreNodeId,

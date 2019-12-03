@@ -89,7 +89,6 @@ import           Ouroboros.Consensus.Ledger.Byron (ByronBlock (..),
                                                    GenTx (..),
                                                    ByronConsensusProtocol)
 import qualified Ouroboros.Consensus.Ledger.Byron as Byron
-import           Ouroboros.Consensus.NodeId (NodeId (..))
 import           Ouroboros.Consensus.Protocol.Abstract (NodeConfig)
 import           Ouroboros.Consensus.Protocol.PBFT (pbftExtConfig)
 
@@ -420,7 +419,7 @@ prepareInitialFunds llTracer
                                               genesisAddress
                                               (NE.fromList [outForBig])
 
-  submitTx socketFp pInfoConfig (CoreId 0) genesisTx llTracer
+  submitTx socketFp pInfoConfig genesisTx llTracer
   -- Done, the first transaction 'initGenTx' is submitted, now 'sourceAddress' has a lot of money.
 
   let txIn  = CC.UTxO.TxInUtxo (getTxIdFromGenTx genesisTx) 0
@@ -813,7 +812,7 @@ createMoreFundCoins llTracer
                                              txOut
                                              []
   liftIO $ forM_ splittingTxs $ \(tx, txDetailsList) -> do
-    submitTx socketFp pInfoConfig (CoreId 0) tx llTracer
+    submitTx socketFp pInfoConfig tx llTracer
     -- Update available fundValueStatus to reuse the numSplittingTxOuts TxOuts.
     forM_ txDetailsList addToAvailableFunds
  where

@@ -132,7 +132,7 @@ parseChairmanArgs =
       <*> parseFlag' FailureTimeout SuccessTimeout
           "timeout-is-success" "Exit successfully on timeout."
       <*> (GenesisFile <$> parseGenesisPath)
-      <*> parseSocketPath
+      <*> parseSocketPath "Path to a cardano-node socket"
       <*> (ConfigYamlFilePath <$> parseConfigFile)
       <*> (optional $ SigningKeyFile <$> parseSigningKey)
       <*> (optional $ DelegationCertFile <$> parseDelegationCert)

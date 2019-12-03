@@ -155,11 +155,11 @@ parseSocketDirLast =
                 \  ${dir}/node-{core,relay}-${node-id}.socket"
     )
 
-parseSocketPath :: Parser SocketPath
-parseSocketPath =
+parseSocketPath :: Text -> Parser SocketPath
+parseSocketPath helpMessage =
   SocketFile <$> strOption
     ( long "socket-path"
-        <> help "Path to a cardano-node socket"
+        <> (help $ toS helpMessage)
         <> completer (bashCompleter "file")
         <> metavar "FILEPATH"
     )

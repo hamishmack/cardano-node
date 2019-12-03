@@ -53,7 +53,6 @@ import           Cardano.CLI.Tx.Submission
 import           Cardano.Config.Protocol
 import           Cardano.Config.Types (DelegationCertFile, GenesisFile,
                                        SigningKeyFile, SocketPath, Update)
-import           Cardano.Config.Topology
 import           Cardano.Common.Orphans ()
 
 
@@ -289,11 +288,10 @@ issueUTxOExpenditure
 
 -- | Submit a transaction to a node specified by topology info.
 nodeSubmitTx
-  :: TopologyInfo
-  -> Text
-  -> NodeId
+  :: Text
+  -- ^ Genesis hash.
   -> Maybe Int
-  -- ^ Number of core nodes
+  -- ^ Number of core nodes.
   -> GenesisFile
   -> RequiresNetworkMagic
   -> Maybe Double
@@ -305,22 +303,20 @@ nodeSubmitTx
   -> GenTx ByronBlock
   -> IO ()
 nodeSubmitTx
-  topology
   gHash
-  nId
   mNumCoreNodes
   genFile
   nMagic
   sigThresh
   delCertFp
   sKeyFp
-  socketFp
+  targetSocketFp
   update
   ptcl
   gentx =
-    withRealPBFT gHash (Just nId) mNumCoreNodes genFile nMagic sigThresh delCertFp sKeyFp update ptcl $
+    withRealPBFT gHash Nothing mNumCoreNodes genFile nMagic sigThresh delCertFp sKeyFp update ptcl $
       \p@Consensus.ProtocolRealPBFT{} -> do
         case gentx of
           ByronTx txid _ -> putStrLn $ sformat ("TxId: "%Crypto.hashHexF) txid
           _ -> pure ()
-        handleTxSubmission socketFp p topology gentx stdoutTracer
+        handleTxSubmission targetSocketFp p gentx stdoutTracer

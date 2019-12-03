@@ -28,7 +28,6 @@ import           Ouroboros.Consensus.Node.ProtocolInfo ( ProtocolInfo(..)
                                                        , protocolInfo)
 import           Ouroboros.Consensus.Node.Run (RunNode)
 import qualified Ouroboros.Consensus.Node.Run as Node
-import           Ouroboros.Consensus.NodeId (NodeId(..))
 import qualified Ouroboros.Consensus.Protocol as Consensus
 import           Ouroboros.Consensus.Protocol hiding (Protocol)
 
@@ -48,7 +47,6 @@ import           Ouroboros.Network.Protocol.Handshake.Version ( Versions
 import           Ouroboros.Network.NodeToClient (NetworkConnectTracers (..))
 import qualified Ouroboros.Network.NodeToClient as NodeToClient
 
-import           Cardano.Config.Topology
 import           Cardano.Common.LocalSocket
 import           Cardano.Config.Types (SocketPath(..))
 
@@ -67,27 +65,25 @@ handleTxSubmission :: forall blk.
                       )
                    => SocketPath
                    -> Consensus.Protocol blk
-                   -> TopologyInfo
                    -> GenTx blk
                    -> Tracer IO String
                    -> IO ()
-handleTxSubmission socketFp ptcl tinfo tx tracer = do
+handleTxSubmission targetSocketFp ptcl tx tracer = do
     let pinfo :: ProtocolInfo blk
         pinfo = protocolInfo ptcl
 
-    submitTx socketFp (pInfoConfig pinfo) (node tinfo) tx tracer
+    submitTx targetSocketFp (pInfoConfig pinfo) tx tracer
 
 submitTx :: ( RunNode blk
             , Show (ApplyTxErr blk)
             )
          => SocketPath
          -> NodeConfig (BlockProtocol blk)
-         -> NodeId
          -> GenTx blk
          -> Tracer IO String
          -> IO ()
-submitTx socketFp protoInfoConfig _ tx tracer = do
-    socketPath <- localSocketAddrInfo socketFp
+submitTx targetSocketFp protoInfoConfig tx tracer = do
+    targetSocketFp' <- localSocketAddrInfo targetSocketFp
     NodeToClient.connectTo
       NetworkConnectTracers {
           nctMuxTracer       = nullTracer,
@@ -95,7 +91,7 @@ submitTx socketFp protoInfoConfig _ tx tracer = do
         }
       (localInitiatorNetworkApplication tracer protoInfoConfig tx)
       Nothing
-      socketPath
+      targetSocketFp'
 
 localInitiatorNetworkApplication
   :: forall blk m peer.
