@@ -226,7 +226,7 @@ let
         enable = true;
         legacy-node-count = 4;
         shelley-node-count = 3;
-        genesis-dir = "${../configuration/b0109}";
+        genesis-dir = "${../configuration/c0c75}";
       }
     ## NOTE:  we do the above defaulting, so the following works, FWIW
     ##    nix-build -A scripts.mainnet.chairman

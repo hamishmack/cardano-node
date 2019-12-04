@@ -13,10 +13,11 @@ let
     let exec = "cardano-node";
         cmd = builtins.filter (x: x != "") [
           "${cfg.package}/bin/${exec}"
+          "run"
           "--genesis-file ${cfg.genesisFile}"
           "--config ${cfg.nodeConfigFile}"
           "--database-path ${cfg.databasePath}"
-          "--socket-dir ${if (cfg.runtimeDir == null) then "${cfg.stateDir}/socket" else "/run/${cfg.runtimeDir}"}"
+          "--socket-path ${cfg.socketPath}"
           "--topology ${cfg.topology}"
           "--host-addr ${cfg.hostAddr}"
           "--port ${toString cfg.port}"
@@ -27,11 +28,12 @@ let
         ] ++ cfg.extraArgs;
     in ''
         choice() { i=$1; shift; eval "echo \''${$((i + 1))}"; }
-        echo "Starting ${exec}: '' + concatStringsSep "\"\n   echo \"" cmd + ''"
+        echo "Starting ${exec}: ${concatStringsSep "\"\n   echo \"" cmd}"
         echo "..or, once again, in a single line:"
-        echo "''                   + toString                          cmd + ''"
-        ls -l ${if (cfg.runtimeDir == null) then "${cfg.stateDir}/socket" else "/run/${cfg.runtimeDir}"} || true
-        ''                         + toString                          cmd;
+        echo "${toString cmd}"
+        ls -l ${cfg.socketPath} || true
+        ${toString cmd}
+        '';
 in {
   options = {
     services.cardano-node = {
@@ -146,6 +148,14 @@ in {
         default = "cardano-node";
         description = ''
           Runtime directory relative to /run
+        '';
+      };
+
+      socketPath = mkOption {
+        type = types.str;
+        default = "${cfg.stateDir}/node-core-0.socket";
+        description = ''
+          Socket that the node will be listening on
         '';
       };
 

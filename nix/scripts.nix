@@ -20,7 +20,7 @@ let
       signingKey = null;
       delegationCertificate = null;
       nodeId = 0;
-      stateDir = "./";
+      stateDir = ".";
       # defaults to proxy if env has no relays
       edgeHost = "127.0.0.1";
       edgeNodes = [];
