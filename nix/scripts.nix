@@ -78,5 +78,6 @@ let
   {
     node = mkNodeScript environment;
     chairman = svcLib.mkChairmanScript;
+    runTxGenerator = svcLib.mkRunTxGeneratorScript;
   });
 in scripts

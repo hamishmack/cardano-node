@@ -1,4 +1,4 @@
-{ pkgs, cardano-node ? pkgs.cardano-node }:
+{ pkgs, cardano-node ? (import ./nix-tools.nix {}).nix-tools.exes.cardano-node }:
 with builtins; with pkgs.lib;
 let
 
@@ -262,6 +262,33 @@ let
     ${script} $@
   '';
 
+  ## mkRunTxGeneratorScript
+  mkRunTxGeneratorScript =
+    { genesis-file ? "${../configuration/mainnet-genesis.json}"
+    , target-nodes ? ["127.0.0.1"]
+    }:
+  let
+    genesis-hash = readFile (genesisHash genesis-file);
+  in pkgs.writeScript "run_tx_generator" ''
+    #!${pkgs.runtimeShell}
+    set -euo pipefail
+    ${cardano-node}/bin/cardano-cli --log-config ${../configuration/log-configuration.yaml} \
+                --signing-key /var/lib/keys/cardano-node-signing-gen \
+                --database-path /var/lib/cardano-node/db-shelley-dev \
+                --delegation-certificate /var/lib/keys/cardano-node-delegation-cert \
+                --genesis-file ${genesis-file} \
+                --genesis-hash ${genesis-hash} \
+                --socket-dir /run/cardano-node \
+                --real-pbft \
+                generate-txs \
+                --sig-key /var/lib/keys/cardano-node-signing-gen \
+                --sig-key /var/lib/keys/cardano-node-signing-rec \
+                --sig-key /var/lib/keys/cardano-node-signing-src \
+                --node-id 0 \
+                ${concatStringsSep " " (map (ip: "--target-node '(\"${ip}\",3001)'") target-nodes)} \
+                $*
+  '';
+
   ## mkProxyFollowerTopology
   ##   :: TopologyArgs -> FilePath (Topology Rewrite)
   mkProxyFollowerTopology =
@@ -320,6 +347,7 @@ in
   extractDelegateCertificate
   genesisHash
   mkChairmanScript
+  mkRunTxGeneratorScript
   toVerification
   mkProxyFollowerTopology
   mkProxyScript
