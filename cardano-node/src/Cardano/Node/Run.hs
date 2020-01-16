@@ -53,6 +53,8 @@ import           Cardano.Config.Types (MiscellaneousFilepaths(..),
 
 import           Ouroboros.Network.Block
 
+import           Ouroboros.Consensus.Mempool.Impl (MempoolCapacityBytes (..))
+import qualified Ouroboros.Consensus.NodeKernel as NK
 import           Ouroboros.Consensus.Node (NodeKernel (getChainDB),
                      ConnectionId (..), DiffusionTracers (..), DiffusionArguments (..),
                      DnsSubscriptionTarget (..), IPSubscriptionTarget (..),
@@ -247,7 +249,7 @@ handleSimpleNode p trace nodeTracers nCli nc = do
       pInfo
       isProducer
       customiseChainDbArgs
-      id -- No NodeParams customisation
+      increaseMempoolCapacity
       $ \registry nodeKernel -> do
         -- Watch the tip of the chain and store it in @varTip@ so we can include
         -- it in trace messages.
@@ -283,3 +285,6 @@ handleSimpleNode p trace nodeTracers nCli nc = do
       _ -> case ncNodeId nc of
              Just (CoreId _) -> IsProducer
              _               -> IsNotProducer
+
+    increaseMempoolCapacity :: NK.NodeArgs IO peer blk -> NK.NodeArgs IO peer blk
+    increaseMempoolCapacity args = args { NK.mempoolCap = MempoolCapacityBytes (1000000 :: Word32) }
