@@ -287,4 +287,8 @@ handleSimpleNode p trace nodeTracers nCli nc = do
              _               -> IsNotProducer
 
     increaseMempoolCapacity :: NK.NodeArgs IO peer blk -> NK.NodeArgs IO peer blk
-    increaseMempoolCapacity args = args { NK.mempoolCap = MempoolCapacityBytes (16000000 :: Word32) }
+    increaseMempoolCapacity args =
+      args
+        { NK.maxBlockSize = NK.MaxBlockSize (20000000 :: Word32)
+        , NK.mempoolCap = MempoolCapacityBytes (16000000 :: Word32)
+        }
