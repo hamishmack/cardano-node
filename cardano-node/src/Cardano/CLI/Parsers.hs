@@ -468,7 +468,6 @@ parseTxRelatedValues =
             <*> parseSigningKeysFiles
                   "sig-key"
                   "Path to signing key file, for genesis UTxO using by generator."
-            <*> parseNodeId "Node Id of target node"
       ]
 
 
