@@ -65,6 +65,7 @@ library
                      , cborg >= 0.2.2 && < 0.3
                      , containers
                      , cryptonite
+                     , data-default
                      , directory
                      , file-embed
                      , filepath
@@ -82,6 +83,7 @@ library
                      , ouroboros-consensus
                      , ouroboros-network
                      , process
+                     , req >= 1.2.1 && < 2.0.0
                      , safe-exceptions
                      , serialise
                      , stm

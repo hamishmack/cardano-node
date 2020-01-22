@@ -1,4 +1,5 @@
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE LambdaCase #-}
@@ -16,6 +17,7 @@ module Cardano.CLI.Tx.Generation
   , FeePerTx(..)
   , TPSRate(..)
   , TxAdditionalSize(..)
+  , ExplorerAPIEnpoint(..)
   , TxGenError
   , genesisBenchmarkRunner
   ) where
@@ -24,6 +26,7 @@ import           Cardano.Prelude
 import           Prelude (String)
 
 import           Codec.CBOR.Read (deserialiseFromBytes)
+import           Codec.Serialise (serialise)
 import           Control.Concurrent (threadDelay)
 import qualified Control.Concurrent.STM as STM
 import           Control.Exception (IOException)
@@ -32,8 +35,11 @@ import           Control.Monad (forM, forM_, mapM, when)
 import qualified Control.Monad.Class.MonadSTM as MSTM
 import           Control.Monad.Trans.Except (ExceptT)
 import           Control.Monad.Trans.Except.Extra (left, right)
+import           Data.Aeson
 import           Data.Bifunctor (bimap)
+import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as LB
+import           Data.Default (def)
 import           Data.Either (isLeft)
 import           Data.Foldable (find, foldl', foldr, toList)
 import qualified Data.IP as IP
@@ -49,6 +55,7 @@ import           Data.Text (Text)
 import qualified Data.Text as T
 import           Data.Time.Clock (DiffTime, picosecondsToDiffTime)
 import           Data.Word (Word8, Word32, Word64)
+import qualified Network.HTTP.Req as Req
 import           Network.Socket (AddrInfo (..),
                      AddrInfoFlag (..), Family (..), SocketType (Stream),
                      addrFamily,addrFlags, addrSocketType, defaultHints,
@@ -125,6 +132,14 @@ newtype TxAdditionalSize =
   TxAdditionalSize Int
   deriving (Eq, Ord, Show)
 
+-- | This parameter specifies Explorer's API endpoint we use to submit
+--   transaction. This parameter is an optional one, and if it's defined -
+--   generator won't submit transactions to 'ouroboros-network', instead it
+--   will submit transactions to that endpoint, using POST-request.
+newtype ExplorerAPIEnpoint =
+  ExplorerAPIEnpoint String
+  deriving (Eq, Ord, Show)
+
 -----------------------------------------------------------------------------------------
 -- | Genesis benchmark runner (we call it in 'Run.runNode').
 --
@@ -142,6 +157,7 @@ genesisBenchmarkRunner
   -> FeePerTx
   -> TPSRate
   -> Maybe TxAdditionalSize
+  -> Maybe ExplorerAPIEnpoint
   -> [FilePath]
   -> ExceptT TxGenError IO ()
 genesisBenchmarkRunner loggingLayer
@@ -154,6 +170,7 @@ genesisBenchmarkRunner loggingLayer
                        txFee
                        tpsRate
                        txAdditionalSize
+                       explorerAPIEndpoint
                        signingKeyFiles = do
   when (length signingKeyFiles < 3) $
     left $ NeedMinimumThreeSigningKeyFiles signingKeyFiles
@@ -216,6 +233,7 @@ genesisBenchmarkRunner loggingLayer
                  txFee
                  tpsRate
                  txAdditionalSize
+                 explorerAPIEndpoint
                  fundsWithGenesisMoney
 
 {-------------------------------------------------------------------------------
@@ -605,6 +623,7 @@ runBenchmark
   -> FeePerTx
   -> TPSRate
   -> Maybe TxAdditionalSize
+  -> Maybe ExplorerAPIEnpoint
   -> AvailableFunds
   -> ExceptT TxGenError IO ()
 runBenchmark benchTracer
@@ -622,6 +641,7 @@ runBenchmark benchTracer
              txFee
              tpsRate
              txAdditionalSize
+             explorerAPIEndpoint
              fundsWithGenesisMoney = do
   liftIO . traceWith benchTracer . TraceBenchTxSubDebug
     $ "******* Tx generator, phase 1: make enough available UTxO entries *******"
@@ -702,23 +722,69 @@ runBenchmark benchTracer
   -- TVar for termination.
   txSubmissionTerm :: MSTM.TVar IO Bool <- liftIO $ STM.newTVarIO False
 
-  liftIO $ do
-    txsLists <- STM.atomically $ STM.takeTMVar txsListsForTargetNodes
-    let targetNodesAddrsAndTxsLists = zip (NE.toList remoteAddresses) txsLists
-    allAsyncs <- forM targetNodesAddrsAndTxsLists $ \(remoteAddr, txsList) ->
-      -- Launch connection and submission threads for a peer
-      -- (corresponding to one target node).
-      launchTxPeer benchTracer
-                   benchmarkTracers
-                   txSubmissionTerm
-                   pInfoConfig
-                   localAddr
-                   remoteAddr
-                   updROEnv
-                   txsList
-    let allAsyncs' = intercalate [] [[c, s] | (c, s) <- allAsyncs]
-    -- Just wait for all threads to complete.
-    mapM_ (void . wait) allAsyncs'
+  txsLists <- liftIO $ STM.atomically $ STM.takeTMVar txsListsForTargetNodes
+  case explorerAPIEndpoint of
+    Nothing ->
+      -- There's no Explorer's API endpoint specified, submit transactions
+      -- to the target nodes via 'ouroboros-network'.
+      liftIO $ do
+        let targetNodesAddrsAndTxsLists = zip (NE.toList remoteAddresses) txsLists
+        allAsyncs <- forM targetNodesAddrsAndTxsLists $ \(remoteAddr, txsList) ->
+          -- Launch connection and submission threads for a peer
+          -- (corresponding to one target node).
+          launchTxPeer benchTracer
+                       benchmarkTracers
+                       txSubmissionTerm
+                       pInfoConfig
+                       localAddr
+                       remoteAddr
+                       updROEnv
+                       txsList
+        let allAsyncs' = intercalate [] [[c, s] | (c, s) <- allAsyncs]
+        -- Just wait for all threads to complete.
+        mapM_ (void . wait) allAsyncs'
+    Just (ExplorerAPIEnpoint endpoint) ->
+      -- Explorer's API endpoint is specified, submit transactions
+      -- to that endpoint using POST-request.
+      case Req.parseUrl (BSC.pack endpoint) of
+        Nothing ->
+          left $ InvalidExplorerAPIEndpoint $ T.pack endpoint
+        Just (Right (_, _)) ->
+          -- Currently Explorer's API assumes HTTP scheme only.
+          -- TODO: discuss should we support https as well?
+          left $ InvalidExplorerAPIEndpoint $ T.pack endpoint
+        Just (Left (httpUrl, _)) ->
+          liftIO $ do
+            txsList <- concat <$> mapM (STM.atomically . STM.takeTMVar) txsLists
+            submitTxsToExplorer benchTracer httpUrl txsList tpsRate
+
+submitTxsToExplorer
+  :: forall m.
+     ( m ~ IO
+     )
+  => Tracer IO (TraceBenchTxSubmit (Byron.GenTxId ByronBlock))
+  -> Req.Url 'Req.Http
+  -> [GenTx ByronBlock]
+  -> TPSRate
+  -> m ()
+submitTxsToExplorer benchTracer url allTxs (TPSRate rate) =
+  forM_ allTxs $ \tx -> do
+    postTx $ serialise tx
+    threadDelay delayBetweenSubmits
+ where
+  postTx :: LB.ByteString -> m ()
+  postTx serializedTx =
+    Req.runReq def $ do
+      respFromExplorer <- Req.req Req.POST
+                                  url
+                                  (Req.ReqBodyLbs serializedTx)
+                                  Req.jsonResponse
+                                  mempty
+      liftIO . traceWith benchTracer . TraceBenchTxSubDebug
+        $ show (Req.responseBody respFromExplorer :: Value)
+
+  delayBetweenSubmits = oneSecond `div` rate
+  oneSecond = 1000000 :: Int
 
 -- | At this moment 'sourceAddress' contains a huge amount of money (lets call it A).
 --   Now we have to split this amount to N equal parts, as a result we'll have

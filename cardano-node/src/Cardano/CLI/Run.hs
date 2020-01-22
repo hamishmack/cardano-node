@@ -25,6 +25,7 @@ module Cardano.CLI.Run (
   , FeePerTx(..)
   , TPSRate(..)
   , TxAdditionalSize(..)
+  , ExplorerAPIEnpoint(..)
   ) where
 
 import           Cardano.Prelude hiding (option, trace)
@@ -63,6 +64,7 @@ import           Cardano.CLI.Tx.Generation (NumberOfTxs (..),
                                             NumberOfOutputsPerTx (..),
                                             FeePerTx (..), TPSRate (..),
                                             TxAdditionalSize (..),
+                                            ExplorerAPIEnpoint (..),
                                             genesisBenchmarkRunner)
 import           Cardano.Common.Orphans ()
 import           Cardano.Config.Protocol
@@ -184,6 +186,7 @@ data ClientCommand
     FeePerTx
     TPSRate
     (Maybe TxAdditionalSize)
+    (Maybe ExplorerAPIEnpoint)
     [SigningKeyFile]
     NodeId
    deriving Show
@@ -312,6 +315,7 @@ runCommand (GenerateTxs
                feePerTx
                tps
                txAdditionalSize
+               explorerAPIEndpoint
                sigKeysFiles
                nodeId) = do
   -- Default update value
@@ -349,6 +353,7 @@ runCommand (GenerateTxs
                                feePerTx
                                tps
                                txAdditionalSize
+                               explorerAPIEndpoint
                                [fp | SigningKeyFile fp <- sigKeysFiles]
 
 {-------------------------------------------------------------------------------

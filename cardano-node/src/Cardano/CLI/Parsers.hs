@@ -358,6 +358,9 @@ parseTPSRate opt desc = TPSRate <$> parseIntegral opt desc
 parseTxAdditionalSize :: String -> String -> Parser TxAdditionalSize
 parseTxAdditionalSize opt desc = TxAdditionalSize <$> parseIntegral opt desc
 
+parseExplorerAPIEndpoint :: String -> String -> Parser ExplorerAPIEnpoint
+parseExplorerAPIEndpoint opt desc = ExplorerAPIEnpoint <$> parseUrl opt desc
+
 parseTxFile :: String -> Parser TxFile
 parseTxFile opt =
   TxFile
@@ -466,6 +469,11 @@ parseTxRelatedValues =
                   parseTxAdditionalSize
                     "add-tx-size"
                     "Additional size of transaction, in bytes."
+                )
+            <*> optional (
+                  parseExplorerAPIEndpoint
+                    "submit-to-api"
+                    "Explorer's API endpoint to submit transaction."
                 )
             <*> parseSigningKeysFiles
                   "sig-key"

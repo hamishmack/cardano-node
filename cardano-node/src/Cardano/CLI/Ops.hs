@@ -187,6 +187,8 @@ data TxGenError =
   -- ^ Need at least 3 signing key files.
   | SecretKeyDeserialiseError !Text
   | SecretKeyReadError !Text
+  | InvalidExplorerAPIEndpoint !Text
+  -- ^ Specified Explorer's API endpoint is invalid.
   deriving Show
 
 -- | Perform an action that expects ProtocolInfo for Byron/PBFT,
