@@ -48,15 +48,15 @@
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "iohk-nix": {
-        "branch": "master",
+        "branch": "jordan/update-mkEdgeTopology",
         "description": "nix scripts shared across projects",
         "homepage": null,
         "owner": "input-output-hk",
         "repo": "iohk-nix",
-        "rev": "e4a53fa76c111393481d5739f0d7d10782f3cfcb",
-        "sha256": "1h5jd10pb8a7n18m5f123imw7nzikpawp3vbqsmhysmfazj61gpb",
+        "rev": "60ba229a02e941ca8aa00782d576bfb38d26100c",
+        "sha256": "0lchcbk144cmrd0fzmixzf7c0bw4dsv3sx45qva82wa7lria9g1j",
         "type": "tarball",
-        "url": "https://github.com/input-output-hk/iohk-nix/archive/e4a53fa76c111393481d5739f0d7d10782f3cfcb.tar.gz",
+        "url": "https://github.com/input-output-hk/iohk-nix/archive/60ba229a02e941ca8aa00782d576bfb38d26100c.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "niv": {

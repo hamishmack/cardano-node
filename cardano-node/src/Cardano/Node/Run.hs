@@ -184,7 +184,7 @@ handleSimpleNode p trace nodeTracers npm = do
         , "**************************************"
         ]
 
-      -- Socket directory
+      -- Socket path
       myLocalAddr <- localSocketAddrInfo $ socketFile rMscFp
 
       addrs <- nodeAddressInfo rNodeAddr
@@ -288,7 +288,7 @@ handleSimpleNode p trace nodeTracers npm = do
         , "**************************************"
         ]
 
-      -- Socket directory
+      -- Socket path
       myLocalAddr <- localSocketAddrInfo $ socketFile mMscFp
 
       addrs <- nodeAddressInfo mockNodeAddress
