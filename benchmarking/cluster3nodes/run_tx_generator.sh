@@ -36,5 +36,4 @@ exec ${GENERATOR} \
   --sig-key ${CONFIGDIR}/latest-genesis/delegate-keys.000.key \
   --sig-key ${CONFIGDIR}/latest-genesis/delegate-keys.001.key \
   --sig-key ${CONFIGDIR}/latest-genesis/delegate-keys.002.key \
-  --node-id 0 \
   ${TARGETNODES}

@@ -41,10 +41,10 @@ function dlgcert () {
         printf -- "--delegation-certificate ${genesis_root}/delegation-cert.%03d.json " "$1"
 }
 function commonargs() {
-        printf -- "--topology configuration/realPBFT/simple-topology-real-pbft-node-$1.json "
+        printf -- "--topology configuration/simple-topology-real-pbft-node-$1.json "
         printf -- "--database-path ./db/ "
         printf -- "--genesis-file ${genesis_file} "
-        printf -- "--genesis-hash ${genesis_hash}"
+        printf -- "--genesis-hash ${genesis_hash} "
         printf -- "--socket-path /tmp/cluster3nodes-socket/$1 "
 }
 
