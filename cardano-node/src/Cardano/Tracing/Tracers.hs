@@ -337,6 +337,9 @@ mkTracers traceOptions tracer = do
           Consensus.TraceBlockFromFuture{} -> teeForge' (ftTraceBlockFromFuture ft)
           Consensus.TraceNodeIsLeader{} -> teeForge' (ftTraceNodeIsLeader ft)
 
+          Consensus.TraceMempoolSize{} -> teeForge' (ftForged ft)
+          Consensus.TraceSelectMempoolTxsForSize{} -> teeForge' (ftForged ft)
+
       traceWith (toLogObject' tform tverb tr) ev
 
     teeForge'
@@ -367,6 +370,11 @@ mkTracers traceOptions tracer = do
               LogValue "blockFromFuture" $ PureI $ fromIntegral $ unSlotNo slot
             Consensus.TraceNodeIsLeader slot ->
               LogValue "nodeIsLeader" $ PureI $ fromIntegral $ unSlotNo slot
+
+            Consensus.TraceMempoolSize numTxs ->
+              LogValue "mempoolSize" $ PureI $ fromIntegral numTxs
+            Consensus.TraceSelectMempoolTxsForSize maxBlockBodySize _ _ ->
+              LogValue "selectMempoolTxsForSize" $ PureI $ fromIntegral maxBlockBodySize
 
     mkConsensusTracers
         :: ForgeTracers -> TraceOptions -> Consensus.Tracers' peer blk (Tracer IO)

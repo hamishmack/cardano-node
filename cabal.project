@@ -163,13 +163,13 @@ source-repository-package
 source-repository-package
   type: git
   location: https://github.com/input-output-hk/ouroboros-network
-  tag: ac6ac3f302c800f397a59d91bbfb29477379f0c2
+  tag: b46380212cb7a5082e07fe1c5997ecc1007cb389
   subdir: ouroboros-network
 
 source-repository-package
   type: git
   location: https://github.com/input-output-hk/ouroboros-network
-  tag: ac6ac3f302c800f397a59d91bbfb29477379f0c2
+  tag: b46380212cb7a5082e07fe1c5997ecc1007cb389
   subdir: ouroboros-consensus
 
 source-repository-package
@@ -193,7 +193,7 @@ source-repository-package
 source-repository-package
   type: git
   location: https://github.com/input-output-hk/ouroboros-network
-  tag: ac6ac3f302c800f397a59d91bbfb29477379f0c2 
+  tag: ac6ac3f302c800f397a59d91bbfb29477379f0c2
   subdir: io-sim-classes
 
 source-repository-package

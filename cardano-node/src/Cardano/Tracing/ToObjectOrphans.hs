@@ -326,6 +326,9 @@ instance DefineSeverity (TraceForgeEvent blk tx) where
   defineSeverity TraceDidntAdoptBlock {}        = Warning
   defineSeverity TraceForgedInvalidBlock {}     = Alert
 
+  defineSeverity TraceMempoolSize {}            = Info
+  defineSeverity TraceSelectMempoolTxsForSize {}= Info
+
 -- | instances of @Transformable@
 
 -- transform @ChainSyncClient@
@@ -895,4 +898,17 @@ instance ProtocolLedgerView blk => ToObject (TraceForgeEvent blk tx) where
     mkObject
         [ "kind"    .= String "TraceStartLeadershipCheck"
         , "slot"    .= toJSON (unSlotNo slotNo)
+        ]
+
+  toObject _verb (TraceMempoolSize numTxsInMempool) =
+    mkObject
+        [ "kind" .= String "TraceMempoolSize"
+        , "numTxsInMempool" .= toJSON numTxsInMempool
+        ]
+  toObject _verb (TraceSelectMempoolTxsForSize maxBlockBodySize numTxsSelected selectedTxsSizes) =
+    mkObject
+        [ "kind" .= String "TraceSelectMempoolTxsForSize"
+        , "maxBlockBodySize" .= toJSON maxBlockBodySize
+        , "numTxsSelected" .= toJSON numTxsSelected
+        , "selectedTxsSizes" .= toJSON selectedTxsSizes
         ]

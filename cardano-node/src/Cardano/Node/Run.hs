@@ -291,4 +291,5 @@ handleSimpleNode p trace nodeTracers nCli nc = do
       args
         { NK.maxBlockSize = NK.MaxBlockSize (20000000 :: Word32)
         , NK.mempoolCap = MempoolCapacityBytes (16000000 :: Word32)
+        -- , NK.maxUnackTxs = 1000
         }
