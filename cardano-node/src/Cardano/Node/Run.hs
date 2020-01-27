@@ -133,8 +133,7 @@ runNode loggingLayer npm = do
         be :: LiveViewBackend Text <- realize c
         let lvbe = MkBackend { bEffectuate = effectuate be, bUnrealize = unrealize be }
         llAddBackend loggingLayer lvbe (UserDefinedBK "LiveViewBackend")
-        let nId = fromMaybe (panic "LiveView not possible for real protocols as yet") (ncNodeId nc)
-        setTopology be nId
+        setTopology be npm
         setNodeThread be nodeThread
         captureCounters be trace
 
