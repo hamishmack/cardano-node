@@ -96,7 +96,7 @@ extra-deps:
     #Ouroboros-network dependencies
 
   - git: https://github.com/input-output-hk/ouroboros-network
-    commit: ac6ac3f302c800f397a59d91bbfb29477379f0c2
+    commit: 04503b01eac45427251701b0fe93edd7d9756bc8
     subdirs:
         - io-sim-classes
         - network-mux
