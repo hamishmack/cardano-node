@@ -10,17 +10,27 @@
 , compiler ? config.haskellNix.compiler or "ghc865"
 # Enable profiling
 , profiling ? config.haskellNix.profiling or false
+, haskellNixSource
 }:
 let
+
+  # This is only needed to make these tools use the
+  # nixpkgs-default from haskell.nix (so they are
+  # found in the cache)
+  currentSystemPkgs = (import haskellNixSource {
+    defaultCompilerNixName = compiler;
+  }).pkgs;
 
   # This creates the Haskell package set.
   # https://input-output-hk.github.io/haskell.nix/user-guide/projects/
   pkgSet = haskell-nix.cabalProject {
-    src = haskell-nix.haskellLib.cleanGit {
+    src = currentSystemPkgs.haskell-nix.haskellLib.cleanGit {
       name = "cardano-node";
       src = ../.;
     };
-    ghc = buildPackages.haskell-nix.compiler.${compiler};
+    compiler-nix-name = compiler;
+    inherit (currentSystemPkgs.haskell-nix) cabal-install nix-tools dotCabal;
+    hpack = null;
     modules = [
 
       # Allow reinstallation of Win32

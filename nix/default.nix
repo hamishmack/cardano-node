@@ -7,7 +7,7 @@ let
   sources = import ./sources.nix { inherit pkgs; }
     // sourcesOverride;
   iohkNix = import sources.iohk-nix {};
-  haskellNix = import sources."haskell.nix";
+  haskellNix = import sources."haskell.nix" {};
   # use our own nixpkgs if it exists in our sources,
   # otherwise use iohkNix default nixpkgs.
   nixpkgs = if (sources ? nixpkgs)
@@ -35,6 +35,7 @@ let
           // { inherit overlays sources nixpkgs; };
 
         svcLib = import ./svclib.nix { inherit pkgs; };
+        haskellNixSource = sources."haskell.nix";
       })
       # And, of course, our haskell-nix-ified cabal project:
       (import ./pkgs.nix)
